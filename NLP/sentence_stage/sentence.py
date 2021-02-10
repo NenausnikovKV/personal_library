@@ -31,6 +31,7 @@ class Sentence:
         self.words = sen_words
         self.vivo = syn_vivo
 
+
     @classmethod
     def initial_from_text(cls, sentence_text, number=-1, start=-1, ):
         sent = SyntaxAnalyzer.get_sent_from_sentence_text(sentence_text)
