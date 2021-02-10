@@ -1,3 +1,4 @@
+import copy
 from operator import attrgetter
 from natasha import Segmenter, NewsEmbedding, NewsMorphTagger, NewsSyntaxParser, Doc
 from yargy.tokenizer import MorphTokenizer
@@ -18,40 +19,36 @@ def clear_puctuations(sentence):
             sentence.remove_word(mark)
 
 def get_text_relations(text, segmenter = Segmenter(),morph_tagger = NewsMorphTagger(NewsEmbedding()),
-                       syntax_parser = NewsSyntaxParser(NewsEmbedding()), tokenizer = MorphTokenizer(),
-                       morph = MorphDictionary()):
+                       syntax_parser = NewsSyntaxParser(NewsEmbedding()), morph = MorphDictionary()):
+    syn_analizer = "Возьми из основы"
     sentence_vivos = []
-    text_object = Text.get_text_object(text, tokenizer = tokenizer, morph = morph)
+    text_object = Text.get_text_object_from_text(text, number=0, corpus_source=None, syn_analizer="Задолбался", morph=morph)
     for sentence in text_object.sentences.values():
-        clear_puctuations(sentence)
-        relations = get_sentence_relations(sentence, segmenter, morph_tagger, syntax_parser)
-        sentence_vivo = Vivo(relations=relations)
+
+        sentence_vivo = get_sentence_vivo(sentence, segmenter, morph_tagger, syntax_parser)
         sentence_vivos[hash(sentence.text)] = sentence_vivo
     return sentence_vivos
 
-def get_sentence_relations(sentence, segmenter = Segmenter(), morph_tagger = NewsMorphTagger(NewsEmbedding()),
-                       syntax_parser = NewsSyntaxParser(NewsEmbedding()) ):
+def get_sentence_vivo(sentence, segmenter = Segmenter(), morph_tagger = NewsMorphTagger(NewsEmbedding()),
+                      syntax_parser = NewsSyntaxParser(NewsEmbedding())):
+
+
+    copy_sentence = copy.deepcopy(sentence)
+    clear_puctuations(copy_sentence)
 
     # обработка поступившего текста
-    doc = Doc(sentence.text)
+    doc = Doc(copy_sentence.text)
     doc.segment(segmenter)
     doc.tag_morph(morph_tagger)
     doc.parse_syntax(syntax_parser)
 
     sent = doc.sents[0]
-    sent.syntax.print()
+    # sent.syntax.print()
 
     tokens = list(sent.syntax.tokens)
     for token in tokens:
-        head_id = token.head_id
-        head_id = head_id.split("_")[1]
-        token.head_id = int(head_id)
-
-        id = token.id
-        id = id.split("_")[1]
-        token.id = int(id)
-
-
+        token.head_id = int(str(token.head_id).split("_")[1])
+        token.id = int(str(token.id).split("_")[1])
     head_id_tokens = sorted(tokens, key=attrgetter("head_id"))
     token_dict = dict([token.id, token] for token in tokens)
 
@@ -68,4 +65,13 @@ def get_sentence_relations(sentence, segmenter = Segmenter(), morph_tagger = New
 
         relation = Relation(text1, text2, rating=1)
         relations.append(relation)
-    return relations
+    sentence_vivo = Vivo(relations=relations)
+    return sentence_vivo
+
+if __name__=="__main__":
+    segmenter = Segmenter()
+    text = "привет люди"
+    doc = Doc(text)
+    doc.segment(segmenter)
+    sent = doc.sents[0]
+    print(1)

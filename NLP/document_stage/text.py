@@ -1,14 +1,10 @@
 # coding: utf-8
 
 """Модуль хранения согласия и входящих в него объектов"""
-import copy
-
-import razdel
-from yargy.tokenizer import MorphTokenizer
-
-from NLP.dictionary_library.morphDictionary import MorphDictionary
+from NLP.syntax_analyzer import SyntaxAnalyzer
 from NLP.sentence_stage.sentence import Sentence
 from NLP.token_stage.word import TextWord
+
 
 
 class Text:
@@ -16,14 +12,26 @@ class Text:
     Текст целиком, предложения, слова, токены
     и методы их получения и обработки в контексте целого текста
     """
-    number = 0
 
-    def __init__(self, text, sentences, words, number=0, corpus_source=None):
+    #  подтягиваем внешние библиотеки для обработки естественного языка
+    syntax_analizer =  SyntaxAnalyzer()
+
+    def __init__(self, text, sentences, words, number=-1):
         self.text = text
         self.sentences = sentences
         self.words = words
         self.number = number
-        self.corpus = corpus_source
+
+
+    @classmethod
+    def get_text_object_from_text(clc, file_text, number=-1):
+        """
+        Дополнительный конструктор
+        """
+        sentences = clc.recognise_sentences(file_text)
+        words = clc._get_words_of_all_sentences(sentences)
+        return clc(file_text, sentences, words, number)
+
 
     def __str__(self):
         return "text " + str(self.number)
@@ -31,16 +39,6 @@ class Text:
     def __lt__(self, other):
         return len(self.sentences) < len(other.sentences)
 
-    @staticmethod
-    def preprocessing(text):
-        i = 2
-        while i < text.__len__():
-            if text[i - 1] == "\n" and text[i].isupper():
-                text = text[:i -1] + ". " + text[i:]
-            i += 1
-        text = text.replace("\n", " ")
-        text = text.replace("Ф.И.О.", "ФИО")
-        return text
 
     def remove_word(self, text):
         self.words.pop(hash(text))
@@ -52,22 +50,20 @@ class Text:
                     text_stop = sentence.start + stop[i]
                     self.text=self.text[:text_start]+self.text[text_stop:]
 
-
-    def replace_word(self, text1, text2):
+    def replace_word(self, word_text1, word_text2):
         # удаляем перове слово из словаря
-        self.words.pop(hash(text1))
+        self.words.pop(hash(word_text1))
         sen_num = 0
         for sentence in self.sentences.values():
-            if sentence.words.get(hash(text1)):
+            if sentence.words.get(hash(word_text1)):
                 # удаляем первое слово, получаем положение и заполняем его новым словом
-                sen_word = sentence.replace_word(text1, text2)
-
-                # отмечаем изменения в словаре
-                if self.words.get(hash(text2)):
-                    word = self.words.get(hash(text2))
+                sen_word = sentence.replace_word(word_text1, word_text2)
+                # отмечаем изменения в словаре текста
+                if self.words.get(hash(word_text2)):
+                    word = self.words.get(hash(word_text2))
                     word.rating += 1
                 else:
-                    self.words[hash(text2)] = TextWord(sen_word)
+                    self.words[hash(word_text2)] = TextWord(sen_word)
 
                 # корректировка смещения предложений при изменении внутри них слов
                 sentence_keys = list(self.sentences.keys())
@@ -87,38 +83,29 @@ class Text:
             text = text + sentence.text
         self.text = text
 
-
-
-
-    @staticmethod
-    def get_words_of_all_sentences(sentences):
+    @classmethod
+    def _get_words_of_all_sentences(clc, sentences):
         all_sentences_words = {}
-        for sentence_hash in sentences:
-            sentence = sentences[sentence_hash]
-            for key in sentence.words:
-                sen_word = sentence.words[key]
-                if not all_sentences_words.get(key):
-                    all_sentences_words[key] = TextWord(sen_word)
+        for sentence in sentences.values():
+            for word_hash, sen_word in sentence.words.items():
+                if not all_sentences_words.get(word_hash):
+                    all_sentences_words[word_hash] = TextWord(sen_word)
                 else:
-                    all_sentences_words[key].involve_new_source(sentence.words[key])
+                    all_sentences_words[word_hash].involve_new_source(sentence.words[word_hash])
         return all_sentences_words
 
 
-
-    @staticmethod
-    def recognise_sentences(file_text, tokenizer, morph):
-        """Синтаксическое выделение предложений из текста"""
+    @classmethod
+    def recognise_sentences(clc, file_text):
+        """
+        Выделяем тексты предложений и создаем экземпляры предложений
+        """
+        sents = SyntaxAnalyzer.divide_text_to_sents(file_text)
         sentences = {}
-        num = 0
-        for sentence in razdel.sentenize(file_text):
-            key = hash(sentence.text)
-            sentences[key] = Sentence.initial_sentence(sentence.text, num, sentence.start, tokenizer, morph)
-            num += 1
+        for num, sent in enumerate(sents):
+            key = hash(sent.text)
+            sentences[key] = Sentence.initial_from_natasha_sent(sent, num)
         return sentences
 
-    @staticmethod
-    def get_text_object(file_text, number=0, corpus_source=None, tokenizer=MorphTokenizer(), morph=MorphDictionary()):
-        sentences = Text.recognise_sentences(file_text, tokenizer, morph)
-        words = Text.get_words_of_all_sentences(sentences)
-        return Text(file_text, sentences, words, number, corpus_source)
+
 

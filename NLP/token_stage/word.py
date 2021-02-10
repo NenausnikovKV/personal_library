@@ -38,10 +38,6 @@ class SentenceWord(Word):
     def __str__(self):
         return self.text + " (" + str(self.rating) + ")"
 
-class WordSource:
-    def __init__(self, sen_word, source):
-        self.sen_word = sen_word
-        self.source = source
 
 class TextWord():
     def __init__(self, sen_word):
@@ -70,3 +66,7 @@ class TextWord():
         return self.text + " (" + str(self.rating) + ")"
 
 
+class WordSource:
+    def __init__(self, sen_word, source):
+        self.sen_word = sen_word
+        self.source = source

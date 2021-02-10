@@ -15,6 +15,18 @@ def get_agreements(file_text):
     return agreement_texts
 
 
+def preprocessing(text):
+    i = 2
+    while i < text.__len__():
+        if text[i - 1] == "\n" and text[i].isupper():
+            text = text[:i - 1] + ". " + text[i:]
+        i += 1
+    text = text.replace("\n", " ")
+    text = text.replace("Ф.И.О.", "ФИО")
+    text = text.replace("..", ".")
+    return text
+
+
 if __name__ == "__main__":
     file_name = "../in/texts/agreements.txt"
 
@@ -23,14 +35,11 @@ if __name__ == "__main__":
 
     texts = get_agreements(file_text)
 
-
     addresses = []
     names = []
     locations = []
 
-
     start_time = datetime.now()
-
 
 
     def rewrite_matches(matches, signature, text):
@@ -44,7 +53,7 @@ if __name__ == "__main__":
             substring = text[start:stop]
             if substring == "":
                 raise Exception
-            bias += (stop-start) - signature.__len__()
+            bias += (stop - start) - signature.__len__()
             first_part = text[:start]
             second_part = text[stop:]
             text = first_part + signature + second_part
@@ -59,7 +68,7 @@ if __name__ == "__main__":
     name_extractor = natasha.NamesExtractor()
     address_extractor = natasha.AddressExtractor()
     location_extractor = natasha.LocationExtractor()
-    result_text =""
+    result_text = ""
     for text in texts:
         print(num)
         # if num <18:
