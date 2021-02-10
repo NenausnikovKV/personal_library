@@ -15,7 +15,7 @@ def _extract_check_blocks_from_file(file_text):
         block_value = line[separator+3:]
         block_sentences = SyntaxAnalyzer.divide_text_to_sentence_plan_texts(block_value)
         for block_sentence in block_sentences:
-            blocks[block_name].append(Sentence.initial_from_text(block_sentence))
+            blocks[block_name].append(Sentence.initial_from_sentence_text(block_sentence))
     return  text_num, blocks
 
 

@@ -100,11 +100,11 @@ class Text:
         """
         Выделяем тексты предложений и создаем экземпляры предложений
         """
-        sents = SyntaxAnalyzer.divide_text_to_sents(file_text)
+        natasha_sents = SyntaxAnalyzer.divide_text_to_sents(file_text)
         sentences = {}
-        for num, sent in enumerate(sents):
+        for num, sent in enumerate(natasha_sents):
             key = hash(sent.text)
-            sentences[key] = Sentence.initial_from_natasha_sent(sent, num)
+            sentences[key] = Sentence.initial_from_natasha_sent(sent, sent.start, num)
         return sentences
 
 

@@ -38,6 +38,16 @@ class SentenceWord(Word):
     def __str__(self):
         return self.text + " (" + str(self.rating) + ")"
 
+    @staticmethod
+    def get_word_dict_from_word_list(word_list):
+        words = {}
+        for word in word_list:
+            if not words.get(hash(word.text)):
+                words[hash(word.text)] = copy.deepcopy(word)
+            else:
+                words[hash(word.text)].rating += word.rating
+        return words
+
 
 class TextWord():
     def __init__(self, sen_word):

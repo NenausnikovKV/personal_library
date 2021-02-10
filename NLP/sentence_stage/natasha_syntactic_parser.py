@@ -56,12 +56,12 @@ def get_sentence_vivo(sentence, segmenter = Segmenter(), morph_tagger = NewsMorp
     for token in head_id_tokens:
         # смещение на 1 так как 0 - это корень
         token1 = token
-        text1 = Sentence.get_token_normal_form(sentence, token1.id - 1)
+        text1 = Sentence.get_normal_form_token(sentence, token1.id - 1)
         # 0 связан с корем древа
         if token.head_id == 0:
             continue
         token2 = token_dict[token.head_id]
-        text2 = Sentence.get_token_normal_form(sentence, token2.id - 1)
+        text2 = Sentence.get_normal_form_token(sentence, token2.id - 1)
 
         relation = Relation(text1, text2, rating=1)
         relations.append(relation)

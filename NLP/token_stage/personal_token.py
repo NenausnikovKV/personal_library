@@ -43,3 +43,12 @@ class SentenceToken(Token):
         self.start = start
         self.stop = stop
         self.num = num
+
+    @staticmethod
+    def find_normal_token_text(token, normal_tokens):
+        start = token.start
+        for norm_token in normal_tokens:
+            if norm_token.start == start:
+                return norm_token.text
+        return None
+

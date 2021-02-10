@@ -2,6 +2,7 @@ import copy
 from collections import namedtuple
 from operator import attrgetter
 
+from NLP.token_stage.word import SentenceWord
 from graph_representation.relation import Relation
 from legal_tech.component_sentence import VivoSentence, RelevantExcert
 from legal_tech.components import ResultComponent
@@ -198,8 +199,8 @@ def get_sentences_from_word_list(origin_sentence, word_list_suspect_couple):
         if element.type != "word":
             second_token_list.append(element)
 
-    first_words = Sentence.get_words(first_word_list)
-    second_words = Sentence.get_words(second_word_list)
+    first_words = SentenceWord.get_word_dict_from_word_list(first_word_list)
+    second_words = SentenceWord.get_word_dict_from_word_list(second_word_list)
 
     # разделение виво
     first_relations = []
