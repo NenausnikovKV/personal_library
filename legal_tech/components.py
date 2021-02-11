@@ -238,8 +238,8 @@ class ResultComponent(AgreementComponent):
             # надеемся, что таким образом удалится одна из составных частей компонента и предложения
             # так как компонент может отображатьяс в тексте несколькими предложениями
             # и предложение можзет содержать несколько компонентов или их частей
-            new_component_vivo = relevant_component.vivo.excise_vivo(component_sentence.vivo)
-            component_sentence.vivo = component_sentence.vivo.excise_vivo(relevant_component.vivo)
+            new_component_vivo = relevant_component.vivo.cut_other_vivo(component_sentence.vivo)
+            component_sentence.vivo = component_sentence.vivo.cut_other_vivo(relevant_component.vivo)
             relevant_component.vivo = new_component_vivo
 
             # перепись релевантности
@@ -318,8 +318,8 @@ class ResultComponent(AgreementComponent):
             # надеемся, что таким образом удалится одна из составных частей компонента и предложения
             # так как компонент может отображатьяс в тексте несколькими предложениями
             # и предложение можзет содержать несколько компонентов или их частей
-            new_component_vivo = relevant_component.vivo.excise_vivo(component_sentence.vivo)
-            component_sentence.vivo = component_sentence.vivo.excise_vivo(relevant_component.vivo)
+            new_component_vivo = relevant_component.vivo.cut_other_vivo(component_sentence.vivo)
+            component_sentence.vivo = component_sentence.vivo.cut_other_vivo(relevant_component.vivo)
             relevant_component.vivo = new_component_vivo
 
             # перепись релевантности
