@@ -1,12 +1,13 @@
 import copy
 import json
 import os
+from collections import defaultdict
 from math import sqrt
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 
 from NLP.token_stage.personal_token import Token
-from file_processing.file_processing import get_general_address
 from graph_representation.relation import Relation
+from graph_representation.vertice import Vertice
 
 
 class Vivo:
@@ -171,42 +172,40 @@ class Vivo:
 
     # Внутренние изменения
     # ------------------------------------------------------------------------------------------------------------------
-    # todo
+
+    # модули редактрования узлов
+
     def cut_node_limit(self, node_limit):
-        pass
 
-
-    def extract_nodes_from_relations(self):
-        nodes = {}
-        for key in self.relations:
-            relation = self.relations[key]
-            node1 = relation.text1
-            node2 = relation.text2
-            if not nodes.get(node1):
-                nodes[hash(node1)] = node1
-            if not nodes.get(node2):
-                nodes[hash(node2)] = node2
-        return nodes
-
-    def remove_relation(self, index):
-        self.relations.pop(index)
-        self.nodes = self.extract_nodes_from_relations()
-        self.normal_relations()
-
-    def reduce_relation(self):
         """
-        уменьшение количества связей на основе среднего арифметического и подборного коэффициента
+        Удаляем все узлы, в которых связь с максимальным рейтингом ("прима узла") имеет меньший рейтинг в сравнении с
+        "примами" остальных узлов.
+        Отмечаем рейтнги последеней примы удаленного узла и вычищаем все связи с рейтингом ниже
         """
-        all_relation_rating = sum([relation.rating for relation in self.relations.values()])
-        # todo почему именно 20? нет логического обоснования подобранного коэффициента
-        average_relation_rating = all_relation_rating / (20 * self.relations.__len__())
-        copy_relations = copy.deepcopy(self.relations)
-        for key, relation in copy_relations.items():
-            relation.rating = relation.rating - average_relation_rating
-            if relation.rating <= 0:
-                self.relations.pop(key)
-        self.nodes = self.extract_nodes_from_relations()
-        self.normal_relations()
+
+        if node_limit > len(self.nodes):
+            return
+
+        #  собираем для каждого узла его связи
+        vertices = []
+        for node in self.nodes.values():
+            relation_list = [relation for relation in self.relations.values() if relation.have_node(node)]
+            vertices.append(Vertice(node, relation_list))
+        sorted_vertices = sorted(vertices, key=attrgetter("max_rating"), reverse=True)
+        border_relation_rating = sorted_vertices[node_limit].max_rating
+        limited_vertices = sorted_vertices[:node_limit]
+
+        # собираем ноды и связи
+        limited_nodes = [vertice.node for vertice in limited_vertices]
+        limited_relations = set()
+        for vertice in limited_vertices:
+            for relation in vertice.relations:
+                if relation.rating > border_relation_rating:
+                    limited_relations.add(relation)
+
+        self.nodes = dict([hash(node), node] for node in limited_nodes)
+        self.relations = dict([hash(relation.text), relation] for relation in limited_relations)
+
 
     def clear_punctuation_marks(self):
         punctuation_list = Token.punctuation_list
@@ -214,6 +213,13 @@ class Vivo:
         for index, relation in tmp_relations.items():
             if relation.text1 in punctuation_list or relation.text2 in punctuation_list:
                 self.relations.pop(index)
+        self.nodes = self.extract_nodes_from_relations()
+        self.normal_relations()
+
+    # модули редактирования связей
+
+    def remove_relation(self, index):
+        self.relations.pop(index)
         self.nodes = self.extract_nodes_from_relations()
         self.normal_relations()
 
@@ -230,7 +236,9 @@ class Vivo:
             relation.rating = relation.rating / general_rating
 
     def filter_relations(self):
-
+        """
+        Удаление всех совсем маленького рейтинга связей, читим потенциальную погрешность
+        """
         relation_list = list(self.relations.values())
         relation_list = sorted(relation_list, key=attrgetter('rating'), reverse=True)
 
@@ -242,10 +250,41 @@ class Vivo:
     def check_empty_relations(self):
         for relation in self.relations.values():
             if relation.rating == 0:
-                print("vivo 3")
+                print("Vivo - check_empty_relations  При проверке найдена связь имеющая нулевой рейтинг")
+
+    def cut_relation_limit(self, relation_limit):
+
+        relation_list = sorted((relation for relation in self.relations.values()), key=attrgetter("rating"))
+        # переписываем связи
+        max_element_number = min([relation_limit, len(relation_list)])
+        relation_list = relation_list[:max_element_number]
+        self.relations = dict([hash(relation.text), relation] for relation in relation_list)
+        # переписываем узлы под связи
+        node_list = Vivo._get_nodes_from_relations(relation_list)
+        self.nodes = dict([hash(node), node] for node in node_list)
+        self.normal_relations()
+
+    def cut_relation_rating(self, rating):
+        pass
 
     # Сравнение
     # ------------------------------------------------------------------------------------------------------------------
+
+    def reduce_relation(self):
+        """
+        уменьшение количества связей на основе среднего арифметического и подборного коэффициента
+        """
+        all_relation_rating = sum([relation.rating for relation in self.relations.values()])
+        # todo почему именно 20? нет логического обоснования подобранного коэффициента
+        average_relation_rating = all_relation_rating / (20 * self.relations.__len__())
+        copy_relations = copy.deepcopy(self.relations)
+        for key, relation in copy_relations.items():
+            relation.rating = relation.rating - average_relation_rating
+            if relation.rating <= 0:
+                self.relations.pop(key)
+        self.nodes = self.extract_nodes_from_relations()
+        self.normal_relations()
+
     def multiplication_compare(self, other):
         self_coincidence = self.part_of(other)
         other_coincidence = other.part_of(self)
@@ -303,6 +342,7 @@ class Vivo:
 
     # работа с объединениями нескольких виво
     # ------------------------------------------------------------------------------------------------------------------
+
     @staticmethod
     def reduce_relation_repeat(vivos):
 
@@ -364,6 +404,7 @@ class Vivo:
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
+
     @staticmethod
     def _get_relations_from_nodes(nodes):
         # Получение связей
@@ -391,3 +432,40 @@ class Vivo:
             if not nodes.get(hash(node2)):
                 nodes[hash(node2)] = node2
         return list(nodes.values())
+
+    @staticmethod
+    def _get_relations_from_verices(vertices):
+        """
+        Получение связей
+        """
+        if vertices.__len__() <= 1:
+            return None
+        relation_set = set()
+        for vertice_realation in vertices:
+            for relation in vertice_realation:
+                relation_set.add(relation)
+        return list(relation_set)
+
+
+    def extract_nodes_from_relations(self):
+        nodes = {}
+        for key in self.relations:
+            relation = self.relations[key]
+            node1 = relation.text1
+            node2 = relation.text2
+            if not nodes.get(node1):
+                nodes[hash(node1)] = node1
+            if not nodes.get(node2):
+                nodes[hash(node2)] = node2
+        return nodes
+
+
+
+if __name__ == "__main__":
+    nodes = ["1", "2", "5", "3", "4", "6"]
+    relation1 = Relation("1", "2", rating=1)
+    relation2 = Relation("2", "3", rating=5)
+    relation3 = Relation("4", "6", rating=3)
+    relation4 = Relation("5", "2", rating=3)
+    vivo = Vivo(nodes=nodes, relations=[relation1, relation2, relation3, relation4])
+    vivo.cut_node_limit(3)

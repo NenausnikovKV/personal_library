@@ -11,7 +11,6 @@ class Relation:
             self.text = Relation.get_relation_text(self.text1, self.text2)
         self.rating = rating
 
-
     def __str__(self):
         return self.text + " - " + str(self.rating)
 
@@ -22,6 +21,26 @@ class Relation:
             return self.text1 + "-" + self.text2 == other
         else:
             return None
+
+    def __hash__(self):
+        return hash(self.text)
+
+    def __lt__(self, other):
+        if self.rating<other.rating:
+            return True
+        else:
+            return False
+
+
+
+    def have_node(self, text):
+        if any( [self.text1 == text, self.text2 == text] ):
+            return True
+        else:
+            return False
+
+
+
 
     @staticmethod
     def get_relation_text(text1, text2):
