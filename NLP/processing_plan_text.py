@@ -1,3 +1,5 @@
+import re
+
 from NLP.syntax_analyzer import SyntaxAnalyzer
 from file_processing.file_processing import get_general_address
 
@@ -11,6 +13,29 @@ def unit_upper_case_register_sequence_sentence(sentence_texts):
             sentence_texts[num-1] = sentence_text1 + sentence_text2
         num+=1
     return sentence_texts
+
+
+def get_agreements(file_text):
+    agrement_start_sample = r"\wогласие\b\s+\d+"
+    agreement_texts = re.split(agrement_start_sample, file_text)
+    i = 0
+    for text in agreement_texts:
+        if text == "":
+            agreement_texts.pop(i)
+        i += 1
+    return agreement_texts
+
+def simple_preprocessing(text):
+    i = 2
+    while i < text.__len__():
+        if text[i - 1] == "\n" and text[i].isupper():
+            text = text[:i - 1] + ". " + text[i:]
+        i += 1
+    text = text.replace("\n", " ")
+    text = text.replace("Ф.И.О.", "ФИО")
+    text = text.replace("..", ".")
+    return text
+
 
 def correct_register(text):
     # все слова в верзнем регистре переводятся в верхний регистр первая буква слова

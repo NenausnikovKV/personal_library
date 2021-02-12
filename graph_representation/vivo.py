@@ -205,7 +205,7 @@ class Vivo:
 
         self.nodes = dict([hash(node), node] for node in limited_nodes)
         self.relations = dict([hash(relation.text), relation] for relation in limited_relations)
-
+        self.normal_relations()
 
     def clear_punctuation_marks(self):
         punctuation_list = Token.punctuation_list
@@ -267,9 +267,6 @@ class Vivo:
     def cut_relation_rating(self, rating):
         pass
 
-    # Сравнение
-    # ------------------------------------------------------------------------------------------------------------------
-
     def reduce_relation(self):
         """
         уменьшение количества связей на основе среднего арифметического и подборного коэффициента
@@ -284,6 +281,10 @@ class Vivo:
                 self.relations.pop(key)
         self.nodes = self.extract_nodes_from_relations()
         self.normal_relations()
+
+    # Сравнение
+    # ------------------------------------------------------------------------------------------------------------------
+
 
     def multiplication_compare(self, other):
         self_coincidence = self.part_of(other)
@@ -337,6 +338,12 @@ class Vivo:
             vivo = Vivo.get_vivo_from_json_file(json_object["nodes"], json_object["relations"])
             vivos[json_file_name] = vivo
         return vivos
+
+    def get_relation_rating_sum(self):
+        sum =0
+        for relation in self.relations.values():
+            sum += relation.rating
+        return sum
 
     # ------------------------------------------------------------------------------------------------------------------
 
