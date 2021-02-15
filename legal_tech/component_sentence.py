@@ -44,12 +44,18 @@ class RatedSentence(VivoSentence):
     """ Предложение, его виво-представление и их рейтинги """
 
     def __init__(self, sentence, component_vivo):
+
+        # получение виво в случае работы с полносвязной растопыркой
         # sentence_vivo = get_sentence_vivo(sentence, segmenter, morph_tagger, syntax_parser)
         # vivo = VivoSentence.build_sentence_vivo(sentence)
-        normal_sentence_vivo = copy.deepcopy(sentence.vivo)
-        normal_sentence_vivo.normal_relations()
-        super().__init__(sentence, normal_sentence_vivo)
-        self.relevance = component_vivo.sum_compare(self.vivo)
+
+        sentence_vivo = copy.deepcopy(sentence.vivo)
+        super().__init__(sentence=sentence, vivo=sentence_vivo)
+
+        # в данный момент компонент - это совокцупность всех возможных вербальных описаний компонента,
+        # в то время как предложение представляет собой единственную форму описания
+        # todo переписать на спопоставление части (ветви, кластера) компонена к предложению
+        self.relevance = self.vivo.part_of(component_vivo)
 
     def __str__(self):
         return str(self.relevance) + " - " + self.sentence.text
@@ -58,13 +64,13 @@ class RatedSentence(VivoSentence):
 class ComponentSentence(VivoSentence):
     # предложение, виво и словрь подходящих правил с их релевантностью
     def __init__(self, vivo_sentence, text_components):
+        
         super().__init__(vivo_sentence.sentence, vivo_sentence.vivo)
+        
         self.component_relevance = {}
-        try:
-            for component in text_components:
-                self.component_relevance[component.name] = component.excerts[hash(self.sentence.text)].relevance
-        except:
-            print("component_sentence 1")
+        for component in text_components:
+            self.component_relevance[component.name] = component.excerts[hash(self.sentence.text)].relevance
+        
         self.max_relevance_element_name = ""
         self.max_relevance = -1
         self.define_max_relevance()

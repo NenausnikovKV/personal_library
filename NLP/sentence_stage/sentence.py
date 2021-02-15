@@ -55,6 +55,7 @@ class Sentence:
             head_id_sorted_tokens = sorted(sent_tokens, key=attrgetter("head_id"))
             token_dict = {token.id: token for token in sent_tokens}
 
+            # syn_vivo = Vivo()
             relations = []
             for token in head_id_sorted_tokens:
                 # 0 связан с корнем древа
@@ -69,8 +70,8 @@ class Sentence:
                 if all([Token.define_type(text1) == "word", Token.define_type(text2) == "word",
                         token1.id != token2.id]):
                     relations.append(Relation(text1, text2, rating=1))
-                syn_vivo = Vivo(relations=relations)
-                syn_vivo.normal_relations()
+            syn_vivo = Vivo(relations=relations)
+            syn_vivo.normal_relations()
             return syn_vivo
 
         # sent.syntax.print()

@@ -191,12 +191,16 @@ class Vivo:
         for node in self.nodes.values():
             relation_list = [relation for relation in self.relations.values() if relation.have_node(node)]
             vertices.append(Vertice(node, relation_list))
+
+        # обрезаем вершингы до заданног количества - отмечаем рейтинг связи
         sorted_vertices = sorted(vertices, key=attrgetter("max_rating"), reverse=True)
         border_relation_rating = sorted_vertices[node_limit].max_rating
         limited_vertices = sorted_vertices[:node_limit]
 
-        # собираем ноды и связи
+        # определяем оставшиеся узлы
         limited_nodes = [vertice.node for vertice in limited_vertices]
+
+        # определяем оставшиеся связи
         limited_relations = set()
         for vertice in limited_vertices:
             for relation in vertice.relations:

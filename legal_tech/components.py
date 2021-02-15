@@ -38,7 +38,7 @@ class AgreementComponent(Component):
         return self.name + self.vivo
 
     @staticmethod
-    def read_agreement_samples(directory= "in/current_rules/json"):
+    def read_agreement_samples(directory):
         """Получение элементов согласия"""
         directory = get_general_address(directory)
         json_file_names = filter(lambda x: x.endswith('.json'), os.listdir(directory))
@@ -88,12 +88,12 @@ class TextComponent(AgreementComponent):
 
 
     @staticmethod
-    def get_text_component(sample_component, text_object):
-        sample_vivo = copy.deepcopy(sample_component.vivo)
+    def get_text_component(rule_component, text_object):
+        sample_vivo = copy.deepcopy(rule_component.vivo)
         rated_sentences = {}
         for sentence in text_object.sentences.values():
             rated_sentences[hash(sentence.text)] = RatedSentence(sentence, sample_vivo)
-        return TextComponent(sample_component.name, sample_vivo, sample_component.necessity, rated_sentences)
+        return TextComponent(rule_component.name, sample_vivo, rule_component.necessity, rated_sentences)
 
 class ResultComponent(AgreementComponent):
 
@@ -269,6 +269,7 @@ class ResultComponent(AgreementComponent):
         На основании рейтинга получение списка результирующих компонентов и принадлежщим им предложений
         определяется входимость компонента в предложение
         """
+        
         text_components = {component.name: component for component in text_components}
 
         #  работаем с копиями, т.к. изменяется vivo предложений и компонентов в процессе сравнения
