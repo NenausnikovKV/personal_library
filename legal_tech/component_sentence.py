@@ -55,8 +55,10 @@ class RatedSentence(VivoSentence):
         # в данный момент компонент - это совокцупность всех возможных вербальных описаний компонента,
         # в то время как предложение представляет собой единственную форму описания
         # todo переписать на спопоставление части (ветви, кластера) компонена к предложению
-        self.relevance = self.vivo.part_of(component_vivo)
-
+        # self.relevance = self.vivo.part_of(component_vivo)
+        self.relevance = component_vivo.part_of(self.vivo)
+        
+        
     def __str__(self):
         return str(self.relevance) + " - " + self.sentence.text
 

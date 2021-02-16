@@ -7,6 +7,7 @@ from operator import attrgetter
 from file_processing.file_processing import get_general_address
 from legal_tech.component_sentence import RelevantExcert, RatedSentence, ComponentSentence
 from graph_representation.vivo import Vivo
+from source.structural_sample import StructuralList
 
 
 class Component:
@@ -362,6 +363,7 @@ class ResultComponent(AgreementComponent):
         free_sentences = set(component_sentence.sentence.text for component_sentence in copy.copy(sentences))
         # выделение результирующих компонент
         estimated_components = {}
+        structural_components = StructuralList()
         sentences = sorted(sentences, key=attrgetter('max_relevance'), reverse=True)
         while True:
             winning_sentence = sentences[0]
@@ -371,26 +373,35 @@ class ResultComponent(AgreementComponent):
             if free_sentences.__len__() == 0 or winning_sentence.max_relevance < 0.02:
                 break
 
-            # счетчик по нерасмотренным предложениям
-            if winning_sentence.sentence.text in free_sentences:
-                free_sentences.remove(winning_sentence.sentence.text)
-
             #  работаем с самым релевантным к предложению компонентом
             max_rel_component_name = winning_sentence.max_relevance_element_name
             max_relevant_component = components[max_rel_component_name]
 
-            #  Для записи берем оригинальные компоненты и предложения
-            component_vivo = copy.deepcopy(text_components[max_rel_component_name].vivo)
-            component_sentence = copy.deepcopy(winning_sentence)
-            if not estimated_components.get(max_rel_component_name):
-                result_component = ResultComponent(name=max_rel_component_name,
-                                                   vivo=component_vivo,
-                                                   necessity=True,
-                                                   excerts=[component_sentence]
-                                                   )
-                estimated_components[max_rel_component_name] = result_component
-            else:
-                estimated_components[max_rel_component_name].add_excerts(component_sentence, component_vivo)
+            if structural_components._check_order(category=max_rel_component_name, category_num=winning_sentence.sentence.num):
+
+                
+                # счетчик по нерасмотренным предложениям
+                if winning_sentence.sentence.text in free_sentences:
+                    free_sentences.remove(winning_sentence.sentence.text)
+    
+    
+    
+                #  Для записи берем оригинальные компоненты и предложения
+                component_vivo = copy.deepcopy(text_components[max_rel_component_name].vivo)
+                component_sentence = copy.deepcopy(winning_sentence)
+                if not estimated_components.get(max_rel_component_name):
+                    result_component = ResultComponent(name=max_rel_component_name,
+                                                       vivo=component_vivo,
+                                                       necessity=True,
+                                                       excerts=[component_sentence]
+                                                       )
+                    estimated_components[max_rel_component_name] = result_component
+                else:
+                    estimated_components[max_rel_component_name].add_excerts(component_sentence, component_vivo)
+
+                # пополняем структурные элементы
+                structural_components.add_element(max_rel_component_name, winning_sentence.sentence.num)
+
 
             # перерасчет виво для компонента и предложения
             # из каждого предложенрия и компонента вырезается та часть. которая присутствует в другом
@@ -398,9 +409,8 @@ class ResultComponent(AgreementComponent):
             # так как компонент может отображатьяс в тексте несколькими предложениями
             # и предложение можзет содержать несколько компонентов или их частей
             # вырезается только общая часть
+            
             vivo_intersection = max_relevant_component.vivo.conjunction(winning_sentence.vivo)
-            # попробуем через мягкое изменение и только предложений
-
             # todo проверить верность вычитания
             winning_sentence.vivo = winning_sentence.vivo - vivo_intersection
             # todo более грубое редактирование посредством верезания
@@ -414,7 +424,7 @@ class ResultComponent(AgreementComponent):
             # перепись релевантности
             # перепись релевантностей отставшейся части виво рассматриваемого предложения ко всем компонентам
             for current_component_name in winning_sentence.component_relevance:
-                new_relevance = winning_sentence.vivo.part_of(components[current_component_name].vivo)
+                new_relevance = components[current_component_name].vivo.part_of(winning_sentence.vivo)
                 winning_sentence.component_relevance[current_component_name] = new_relevance
 
             # todo соответственно нам нет необходимости менять рейтинг при компоненте
