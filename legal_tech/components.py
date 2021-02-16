@@ -265,11 +265,13 @@ class ResultComponent(AgreementComponent):
 
     @staticmethod
     def define_estimated_components(component_sentences, text_components):  # tuple, tuple
+        # todo прописать заново для обработки результатов порядка в виде да и нет
+        
         """
         На основании рейтинга получение списка результирующих компонентов и принадлежщим им предложений
         определяется входимость компонента в предложение
         """
-        
+
         text_components = {component.name: component for component in text_components}
 
         #  работаем с копиями, т.к. изменяется vivo предложений и компонентов в процессе сравнения
@@ -279,69 +281,157 @@ class ResultComponent(AgreementComponent):
         # свободные предложения - по ним определяется конец цикла, когда они заканчиваются
         free_sentences = set(component_sentence.sentence.text for component_sentence in copy.copy(sentences))
         # выделение результирующих компонент
-        result_components = {}
+        estimated_components = {}
         sentences = sorted(sentences, key=attrgetter('max_relevance'), reverse=True)
         while True:
-            component_sentence = sentences[0]
-            # перебор всех предложений
-            if free_sentences.__len__()==0 or sentences[0].max_relevance==0:
-                # шанс на раздел
-                if component_sentence.max_relevance < 0.02:
+            winning_sentence = sentences[0]
+
+            #  точка выхода, если рассмотрены все предложения или близость ниже порога
+            #  в теории порог можно не устанавливать
+            if free_sentences.__len__()==0 or winning_sentence.max_relevance < 0.02:
                     break
 
+            # счетчик по нерасмотренным предложениям
+            if winning_sentence.sentence.text in free_sentences:
+                free_sentences.remove(winning_sentence.sentence.text)
 
-            # уменьшаем количество свободных предложений
-            if component_sentence.sentence.text in free_sentences:
-                free_sentences.remove(component_sentence.sentence.text)
-
-            max_rel_component_name = component_sentence.max_relevance_element_name
-            relevant_component = components[max_rel_component_name]
-
-            # print(max_rel_component_name + " " + str(component_sentence.max_relevance))
-            # if max_rel_component_name=="subject.json":
-            #     a=5
+            #  работаем с самым релевантным к предложению компонентом
+            max_rel_component_name = winning_sentence.max_relevance_element_name
+            max_relevant_component = components[max_rel_component_name]
 
             #  Для записи берем оригинальные компоненты и предложения
             component_vivo = copy.deepcopy(text_components[max_rel_component_name].vivo)
-            component_excert = copy.deepcopy(component_sentence)
-            if not result_components.get(max_rel_component_name):
+            component_excert = copy.deepcopy(winning_sentence)
+            if not estimated_components.get(max_rel_component_name):
                 result_component = ResultComponent(name=max_rel_component_name,
                                                    vivo=component_vivo,
                                                    necessity=True,
                                                    excerts=tuple([component_excert])
                                                    )
-                result_components[max_rel_component_name] = result_component
+                estimated_components[max_rel_component_name] = result_component
             else:
-                result_components[max_rel_component_name].add_excerts(component_excert, component_vivo)
+                estimated_components[max_rel_component_name].add_excerts(component_excert, component_vivo)
 
             # перерасчет виво для компонента и предложения
             # из каждого предложенрия и компонента вырезается та часть. которая присутствует в другом
             # надеемся, что таким образом удалится одна из составных частей компонента и предложения
             # так как компонент может отображатьяс в тексте несколькими предложениями
             # и предложение можзет содержать несколько компонентов или их частей
-            new_component_vivo = relevant_component.vivo.cut_other_vivo(component_sentence.vivo)
-            component_sentence.vivo = component_sentence.vivo.cut_other_vivo(relevant_component.vivo)
-            relevant_component.vivo = new_component_vivo
+            # вырезается только общая часть
+            vivo_intersection = max_relevant_component.vivo.conjunction(winning_sentence.vivo)
+            new_component_vivo = max_relevant_component.vivo.cut_other_vivo(vivo_intersection)
+            winning_sentence.vivo = winning_sentence.vivo.cut_other_vivo(vivo_intersection)
+            max_relevant_component.vivo = new_component_vivo
 
             # перепись релевантности
             # перепись релевантностей отставшейся части виво рассматриваемого предложения ко всем компонентам
-            for current_component_name in component_sentence.component_relevance:
-                new_relevance = component_sentence.vivo.sum_compare(components[current_component_name].vivo)
-                component_sentence.component_relevance[current_component_name] = new_relevance
+            for current_component_name in winning_sentence.component_relevance:
+                new_relevance = winning_sentence.vivo.part_of(components[current_component_name].vivo)
+                winning_sentence.component_relevance[current_component_name] = new_relevance
+
             # перпись релевантности предложений к отставшейся части виво рассматриваемого компонентпа
             for sentence in sentences:
-                new_relevance = sentence.vivo.sum_compare(relevant_component.vivo)
+                new_relevance = sentence.vivo.part_of(max_relevant_component.vivo)
                 sentence.component_relevance[max_rel_component_name] = new_relevance
 
             # сортировка по новой максимальной релевантности
             # перечсет максимальной релевантности ко всем компонентам для всех предложений
-            for component_sentence in sentences:
-                component_sentence.max_relevance = 0
-                component_sentence.define_max_relevance()
+            for winning_sentence in sentences:
+                winning_sentence.max_relevance = 0
+                winning_sentence.define_max_relevance()
             # сортировка всех предложений на основе максимальной релевантности
             sentences = sorted(sentences, key=attrgetter('max_relevance'), reverse=True)
 
-        return result_components
+        return estimated_components
+
+    @staticmethod
+    def collate_sentences_and_components(component_sentences, text_components):  # tuple, tuple
+
+        """
+        На основании рейтинга получение списка результирующих компонентов и принадлежщим им предложений
+        определяется входимость компонента в предложение
+        """
+
+        text_components = {component.name: component for component in text_components}
+
+        #  работаем с копиями, т.к. изменяется vivo предложений и компонентов в процессе сравнения
+        components = copy.deepcopy(text_components)
+        sentences = copy.deepcopy(list(component_sentences))
+
+        # свободные предложения - по ним определяется конец цикла, когда они заканчиваются
+        free_sentences = set(component_sentence.sentence.text for component_sentence in copy.copy(sentences))
+        # выделение результирующих компонент
+        estimated_components = {}
+        sentences = sorted(sentences, key=attrgetter('max_relevance'), reverse=True)
+        while True:
+            winning_sentence = sentences[0]
+
+            #  точка выхода, если рассмотрены все предложения или близость ниже порога
+            #  в теории порог можно не устанавливать
+            if free_sentences.__len__() == 0 or winning_sentence.max_relevance < 0.02:
+                break
+
+            # счетчик по нерасмотренным предложениям
+            if winning_sentence.sentence.text in free_sentences:
+                free_sentences.remove(winning_sentence.sentence.text)
+
+            #  работаем с самым релевантным к предложению компонентом
+            max_rel_component_name = winning_sentence.max_relevance_element_name
+            max_relevant_component = components[max_rel_component_name]
+
+            #  Для записи берем оригинальные компоненты и предложения
+            component_vivo = copy.deepcopy(text_components[max_rel_component_name].vivo)
+            component_sentence = copy.deepcopy(winning_sentence)
+            if not estimated_components.get(max_rel_component_name):
+                result_component = ResultComponent(name=max_rel_component_name,
+                                                   vivo=component_vivo,
+                                                   necessity=True,
+                                                   excerts=[component_sentence]
+                                                   )
+                estimated_components[max_rel_component_name] = result_component
+            else:
+                estimated_components[max_rel_component_name].add_excerts(component_sentence, component_vivo)
+
+            # перерасчет виво для компонента и предложения
+            # из каждого предложенрия и компонента вырезается та часть. которая присутствует в другом
+            # надеемся, что таким образом удалится одна из составных частей компонента и предложения
+            # так как компонент может отображатьяс в тексте несколькими предложениями
+            # и предложение можзет содержать несколько компонентов или их частей
+            # вырезается только общая часть
+            vivo_intersection = max_relevant_component.vivo.conjunction(winning_sentence.vivo)
+            # попробуем через мягкое изменение и только предложений
+
+            # todo проверить верность вычитания
+            winning_sentence.vivo = winning_sentence.vivo - vivo_intersection
+            # todo более грубое редактирование посредством верезания
+            # winning_sentence.vivo = winning_sentence.vivo.cut_other_vivo(vivo_intersection)
+
+            # TODO пока без изменений виво, т.к. виво - это модель содержащая несколько реализаций,
+            #  поэтому при его редактировании мы не получим в конце нулевого состава а получим излишнее влияние
+            #  отсутствующих в данном тексте реализация компонента
+            # max_relevant_component.vivo = max_relevant_component.vivo.cut_other_vivo(vivo_intersection)
+
+            # перепись релевантности
+            # перепись релевантностей отставшейся части виво рассматриваемого предложения ко всем компонентам
+            for current_component_name in winning_sentence.component_relevance:
+                new_relevance = winning_sentence.vivo.part_of(components[current_component_name].vivo)
+                winning_sentence.component_relevance[current_component_name] = new_relevance
+
+            # todo соответственно нам нет необходимости менять рейтинг при компоненте
+            # перпись релевантности предложений к отставшейся части виво рассматриваемого компонентпа
+            # for sentence in sentences:
+            #     new_relevance = sentence.vivo.part_of(max_relevant_component.vivo)
+            #     sentence.component_relevance[max_rel_component_name] = new_relevance
+
+            # сортировка по новой максимальной релевантности
+            # перечсет максимальной релевантности ко всем компонентам для всех предложений
+            for winning_sentence in sentences:
+                winning_sentence.max_relevance = 0
+                winning_sentence.define_max_relevance()
+            # сортировка всех предложений на основе максимальной релевантности
+            sentences = sorted(sentences, key=attrgetter('max_relevance'), reverse=True)
+
+        return estimated_components
 
     @staticmethod
     def define_other_result_component(existence_components, sample_components, component_sentences):

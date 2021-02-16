@@ -134,14 +134,16 @@ class Vivo:
 
         return Vivo(nodes.values(), relations.values())
 
-    def cut_vivo_part(self, other):
-        """вырезать повторяющиеся узлы и связи"""
-        result = copy.deepcopy(self)
-        for node_hash in other.nodes:
-            if result.nodes.get(node_hash):
-                result.nodes.pop(node_hash)
-        result.relations = Vivo._get_relations_from_nodes(result.nodes)
-        return result
+
+    def conjunction(self, other):
+        joint_relations_keys = self.relations.keys() & other.relations.keys()
+        joint_relations = {}
+        for key in joint_relations_keys:
+            average_rating = (self.relations[key].rating + other.relations[key].rating)/2
+            joint_relations[key] = Relation(self.relations[key].text, rating=average_rating)
+        joint_nodes = Vivo._get_nodes_from_relations(joint_relations.values())
+        return Vivo(nodes=joint_nodes, relations=joint_relations.values())
+
 
     def substract_without_removing(self, other):
         """
