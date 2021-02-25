@@ -7,7 +7,7 @@ from operator import attrgetter
 from file_processing.file_processing import get_general_address
 from legal_tech.component_sentence import RelevantExcert, RatedSentence, ComponentSentence
 from graph_representation.vivo import Vivo
-from source.structural_sample import StructuralList
+from source.structural_sample.structural_sample import StructuralList
 
 
 class Component:
@@ -377,7 +377,7 @@ class ResultComponent(AgreementComponent):
             max_rel_component_name = winning_sentence.max_relevance_element_name
             max_relevant_component = components[max_rel_component_name]
 
-            if structural_components._check_order(category=max_rel_component_name, category_num=winning_sentence.sentence.num):
+            if structural_components.check_one_component_possibility_order(category=max_rel_component_name, category_num=winning_sentence.sentence.num):
 
                 
                 # счетчик по нерасмотренным предложениям

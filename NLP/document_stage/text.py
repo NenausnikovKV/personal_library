@@ -24,13 +24,13 @@ class Text:
 
 
     @classmethod
-    def get_text_object_from_text(clc, file_text, number=-1):
+    def get_text_object_from_text(cls, file_text, number=-1):
         """
         Дополнительный конструктор
         """
-        sentences = clc.recognise_sentences(file_text)
-        words = clc._get_words_of_all_sentences(sentences)
-        return clc(file_text, sentences, words, number)
+        sentences = cls.recognise_sentences(file_text)
+        words = cls._get_words_of_all_sentences(sentences)
+        return cls(file_text, sentences, words, number)
 
 
     def __str__(self):

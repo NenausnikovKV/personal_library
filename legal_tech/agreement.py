@@ -6,6 +6,7 @@ from yargy.tokenizer import MorphTokenizer
 
 from NLP.dictionary_library.morphDictionary import MorphDictionary
 from NLP.document_stage.text import Text
+from NLP.processing_plan_text import preprocessing
 from file_processing.file_processing import get_general_address, get_anthology_elements
 
 
@@ -13,6 +14,14 @@ class Agreement(Text):
 
     def __init__(self, text_object):
         super().__init__(text_object.text, text_object.sentences, text_object.words, number=0)
+    
+    @classmethod
+    def get_agreement_from_text(cls, text):
+        text = preprocessing(text)
+        text_object = Text.get_text_object_from_text(text)
+        agreement = cls(text_object)
+        agreement.replace_elements()
+        return agreement
 
     @staticmethod
     def get_agreement_texts(file_text):

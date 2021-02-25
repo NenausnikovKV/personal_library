@@ -1,4 +1,6 @@
+import json
 import os
+
 
 
 def get_general_address(local_address):
@@ -22,3 +24,13 @@ def clear_directory(directory):
     for file_name in os.listdir(full_dir_address):
         with open(full_dir_address + "//" + file_name, "w", encoding='utf-8', errors='ignore') as file:
             pass
+
+def read_directory(directory_address):
+    file_names = os.listdir(directory_address)
+    file_texts = []
+    for file_name in file_names:
+        file_address = "{0}\\{1}".format(directory_address, file_name)
+        with open(file_address, "r", encoding="utf-8") as file:
+            file_text = file.read()
+            file_texts.append(file_text)
+    return file_texts

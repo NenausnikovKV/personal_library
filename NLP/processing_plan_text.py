@@ -88,6 +88,13 @@ def _line_break_processing(text):
     text = text.replace("\n", " ")
     return text
 
+def correct_plan_text_list(text):
+    matches = re.findall(r"\d\.", text)
+    for element in matches:
+        text = text.replace(element, element[:-1] + ")")
+    return text
+
+
 def preprocessing(text):
     # убираем предложения написанные капсом - во все словах все кроме первой буквы переводятся в нижний регистр
     # буква остается в верхнем регистре только в  случае если она первая слове и уже была в верхнем регистре
@@ -97,10 +104,12 @@ def preprocessing(text):
     # буква остается в верхнем регистре только в  случае если она первая в предложении или строке и уже была в верхнем регистре
     text = text.replace("Ф.И.О.", "фио")
     text = text.replace("ФИО", "фио")
+    text = correct_plan_text_list(text)
+    # text = re.sub(r"\d\.")
     sentence_texts = SyntaxAnalyzer.divide_text_to_sentence_plan_texts(text)
     # sentence_texts = unit_upper_case_register_sequence_sentence(sentence_texts)
     sentence_texts = [_correct_sentence_register(sentence) for sentence in sentence_texts]
-    text = "".join(sentence_texts)
+    text = " ".join(sentence_texts)
     text = _line_break_processing(text)
     text = text.replace("..", ".")
     return text
