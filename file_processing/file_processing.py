@@ -34,3 +34,9 @@ def read_directory(directory_address):
             file_text = file.read()
             file_texts.append(file_text)
     return file_texts
+
+def write_directory(directory_address, file_names, data_list):
+    for file_name, data in zip(file_names, data_list):
+        file_address = "{0}\\{1}".format(directory_address, file_name)
+        with open(file_address, "w", encoding="utf-8") as file:
+            file.write(data)

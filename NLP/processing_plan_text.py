@@ -1,7 +1,7 @@
+import os
 import re
 
-from NLP.syntax_analyzer import SyntaxAnalyzer
-from file_processing.file_processing import get_general_address
+
 
 def unit_upper_case_register_sequence_sentence(sentence_texts):
     num = 1
@@ -89,9 +89,11 @@ def _line_break_processing(text):
     return text
 
 def correct_plan_text_list(text):
-    matches = re.findall(r"\d\.", text)
-    for element in matches:
-        text = text.replace(element, element[:-1] + ")")
+    # 1) or 1.
+    matches = list(re.findall(r"\d\).*\n", text)) + list(re.findall(r"\d\..*\n", text))
+    for element in set(matches):
+        new_element = element[2:-1]
+        text = text.replace(element, new_element)
     return text
 
 
@@ -102,18 +104,28 @@ def preprocessing(text):
     # очищаем большие буквы внутри предложений
     # все, кроме первой буквы и буквы после перепноса строки переводятся в нижний регистр
     # буква остается в верхнем регистре только в  случае если она первая в предложении или строке и уже была в верхнем регистре
+
+    # удаляем переносы строк
+    # matches = re.findall(r'^[^\w+]', text)
+    # for match in matches:
+    #     text = text.replace(match, " ")
+
     text = text.replace("Ф.И.О.", "фио")
     text = text.replace("ФИО", "фио")
-    text = correct_plan_text_list(text)
+    # text = correct_plan_text_list(text)
+    text = text.replace("\n", " ")
+    # text = _line_break_processing(text)
     # text = re.sub(r"\d\.")
-    sentence_texts = SyntaxAnalyzer.divide_text_to_sentence_plan_texts(text)
+    # sentence_texts = SyntaxAnalyzer.divide_text_to_sentence_plan_texts(text)
     # sentence_texts = unit_upper_case_register_sequence_sentence(sentence_texts)
-    sentence_texts = [_correct_sentence_register(sentence) for sentence in sentence_texts]
-    text = " ".join(sentence_texts)
-    text = _line_break_processing(text)
+    # sentence_texts = [_correct_sentence_register(sentence) for sentence in sentence_texts]
+    # text = " ".join(sentence_texts)
     text = text.replace("..", ".")
     return text
 
 if __name__ == "__main__":
-    with open(get_general_address("in/clean_10_agreements"), "r", encoding='utf-8', errors='ignore') as file:
-        text = preprocessing(file.read())
+    print(os.path.abspath("test1"))
+    with open("test", "r", encoding="utf-8") as file:
+        text = file.read()
+    text = preprocessing(text)
+    print(text)

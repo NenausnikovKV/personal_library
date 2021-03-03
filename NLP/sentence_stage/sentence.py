@@ -298,7 +298,7 @@ class Sentence:
                 coincedence += word.rating / general_rating
         return coincedence
 
-    def word_sum_compare(self, other):
+    def word_compare(self, other):
         self_coincidence = self.part_of(other)
         other_coincidence = other.part_of(self)
         # general_rating = sqrt(other_coincidence * self_coincidence)
@@ -307,7 +307,7 @@ class Sentence:
 
     def compare(self, other):
         if any([self.vivo is None, other.vivo is None]):
-            return self.word_sum_compare(other)
+            return self.word_compare(other)
         else:
             return self.vivo.sum_compare(other.vivo)
 

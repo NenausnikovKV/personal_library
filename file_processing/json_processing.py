@@ -23,4 +23,8 @@ def read_json_directory(directory_address):
     return json_objects
 
 
-
+def write_directory(directory_address, file_names, instance_list):
+    for file_name, instance in zip(file_names, instance_list):
+        file_address = "{0}\\{1}".format(directory_address, file_name)
+        with open(file_address, "w", encoding="utf-8") as file:
+            json.dump(instance, file, ensure_ascii=False, cls=MyJSONEncoder)
