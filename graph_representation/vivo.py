@@ -135,7 +135,7 @@ class Vivo:
         return Vivo(nodes.values(), relations.values())
 
 
-    def conjunction(self, other):
+    def intersection(self, other):
         joint_relations_keys = self.relations.keys() & other.relations.keys()
         joint_relations = {}
         for key in joint_relations_keys:
