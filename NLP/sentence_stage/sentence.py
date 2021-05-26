@@ -3,8 +3,6 @@
 import copy
 from operator import attrgetter
 
-from natasha import Doc
-
 from NLP.external_analizer.sentence_analizer import SentenceAnalyzer
 from NLP.token_stage.word import SentenceWord
 from NLP.token_stage.personal_token import SentenceToken, Token

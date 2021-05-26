@@ -5,7 +5,7 @@ from natasha import NewsEmbedding, Segmenter, NewsMorphTagger, NewsSyntaxParser
 from yargy.tokenizer import MorphTokenizer
 from NLP.external_analizer.morph_dictionaries import MorphDictionary
 from NLP.text_stage.text import Text
-from NLP.processing_plan_text import preprocessing
+from NLP.processing_plain_text import preprocessing
 from file_processing.file_processing import get_general_address, get_anthology_elements
 
 
