@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """Модуль хранения согласия и входящих в него объектов"""
-from NLP.external_analizer.sentence_analizer import SentenceAnalyzer
+from NLP.external_analizer.natasha_sent import SentenceAnalyzer, NatashaSent
 from NLP.sentence_stage.sentence import Sentence
 from NLP.token_stage.word import TextWord
 
@@ -99,11 +99,11 @@ class Text:
         """
         Выделяем тексты предложений и создаем экземпляры предложений
         """
-        natasha_sents = SentenceAnalyzer.divide_text_to_sents(file_text)
+        natasha_sents = SentenceAnalyzer.divide_text_to_natasha_sents(file_text)
         sentences = {}
         for num, sent in enumerate(natasha_sents):
             key = hash(sent.text)
-            sentences[key] = Sentence.initial_from_natasha_sent(sent, sent.start, num)
+            sentences[key] = NatashaSent.get_sentence_from_natasha_sent(sent, sent.start, num)
         return sentences
 
 

@@ -15,13 +15,13 @@ class NatashaSent:
 
     @staticmethod
     def get_sent_from_sentence_text(sen_text):
-        sents = NLPAnalyzer.divide_text_to_sents(sen_text)
+        sents = NLPAnalyzer.divide_text_to_natasha_sents(sen_text)
         sent = sents[0]
         return sent
 
-
+    @staticmethod
     def divide_text_to_sentence_plain_texts(text):
-        sents = NLPAnalyzer.divide_text_to_sents(text)
+        sents = NLPAnalyzer.divide_text_to_natasha_sents(text)
         return [sentence.text for sentence in sents]
 
     @staticmethod
@@ -32,48 +32,20 @@ class NatashaSent:
         sent = doc.sents[0]
         return list(sent.syntax.tokens)
 
+    @staticmethod
+    def divide_text_to_sentence(text):
+        sents = NLPAnalyzer.divide_text_to_natasha_sents(text)
+        sentences = list()
+        for num, sent in enumerate(sents):
+            sentence = NatashaSent.get_sentence_from_natasha_sent(sent, sent.start, num)
+            sentences.append(sentence)
 
     @staticmethod
-    def _get_normal_tokens_and_words(sen_tokens, sentence_text):
-
-        """список слов в родном порядке"""
-        word_tokens = [sen_token for sen_token in sen_tokens if sen_token.type == "word"]
-
-        word_texts = [word_token.text for word_token in word_tokens]
-        normal_words = NLPAnalyzer.morph_dict.parse(word_texts)
-
-
-        """список слов в родном порядке"""
-        sentence_words = []
-        for token_num, word_token in enumerate(word_tokens.__len__()):
-            normal_word = normal_words[token_num]
-            sen_word = SentenceWord(word_token, normal_word, rating=1, num=token_num, source_sentence_text=sentence_text)
-            sentence_words.append(sen_word)
-
-        """список токенов в родном порядке"""
-        normal_tokens = []
-        counter = 0
-        for num, sen_token in enumerate(sen_tokens):
-            if counter < word_tokens.__len__() and sen_token.text == word_tokens[counter].text:
-                normal_token = SentenceToken(normal_words[counter], type="word", num=num,
-                                             start=sen_token.start, stop=sen_token.stop, source_sentence_text=sentence_text)
-                normal_tokens.append(normal_token)
-                counter = counter + 1
-            else:
-                normal_tokens.append(copy.deepcopy(sen_token))
-
-
-
-        return normal_tokens, sentence_words
-
-
-
-    @staticmethod
-    def get_normal_words(sen_tokens, sentence_text):
+    def get_normal_words(sentence_tokens, sentence_text):
 
         """Получаем нормальную форму для словесных токенов"""
 
-        word_tokens = [sen_token for sen_token in sen_tokens if sen_token.type == "word"]
+        word_tokens = [sen_token for sen_token in sentence_tokens if sen_token.type == "word"]
         word_texts = [word_token.text for word_token in word_tokens]
         normal_word_texts = NLPAnalyzer.morph_dict.parse(word_texts)
 
@@ -86,16 +58,16 @@ class NatashaSent:
         return sentence_normal_words
 
     @staticmethod
-    def get_normal_tokens(sen_tokens, sentence_normal_words, sentence_text):
+    def get_normal_tokens(sentence_tokens, sentence_normal_words, sentence_text):
         """список слов в родном порядке"""
-        word_tokens = [sen_token for sen_token in sen_tokens if sen_token.type == "word"]
+        word_tokens = [sen_token for sen_token in sentence_tokens if sen_token.type == "word"]
 
         normal_word_texts = [sentence_word.text for sentence_word in sentence_normal_words]
 
         """список токенов в родном порядке"""
         normal_tokens = []
         counter = 0
-        for num, sen_token in enumerate(sen_tokens):
+        for num, sen_token in enumerate(sentence_tokens):
             if counter < word_tokens.__len__() and sen_token.text == word_tokens[counter].text:
                 normal_token = SentenceToken(normal_word_texts[counter], type="word", num=num,
                                              start=sen_token.start, stop=sen_token.stop, source_sentence_text=sentence_text)
@@ -108,15 +80,15 @@ class NatashaSent:
 
 
     @staticmethod
-    def initial_from_natasha_sent(cls, sent, sentence_start=-1, number=-1):
+    def get_sentence_from_natasha_sent(sent, sentence_start=-1, number=-1):
 
         def get_sentence_tokens(sent_tokens, sent_text):
-            sen_tokens = []
+            sentence_tokens = []
             for token_num, token in enumerate(sent_tokens):
                 token_type = Token.define_type(token.text)
-                sen_token = SentenceToken(token.text, token_type, token_num, token.start, token.stop, source_sentence_text=sent_text)
-                sen_tokens.append(sent_tokens)
-            return sen_tokens
+                sentence_token = SentenceToken(token.text, token_type, token_num, token.start, token.stop, source_sentence_text=sent_text)
+                sentence_tokens.append(sentence_token)
+            return sentence_tokens
 
         def get_syntax_vivo(sent_tokens, sentence_tokens, normal_tokens):
             """
@@ -146,45 +118,9 @@ class NatashaSent:
             return syn_vivo
 
         sentence_tokens = get_sentence_tokens(sent.tokens, sent.text)
-        word_list = NatashaSent.get_normal_words(sentence_tokens, sentence_text=sent.text)
+        word_list = Sentence.get_normal_words(sentence_tokens, sentence_text=sent.text)
         words = SentenceWord.get_word_dict_from_word_list(word_list)
-        normal_tokens = NatashaSent.get_normal_tokens(sentence_tokens, word_list, sent.text)
-
-
+        normal_tokens = Sentence.get_normal_tokens(sentence_tokens, word_list, sentence_text=sent.text)
         syn_vivo = get_syntax_vivo(sent_tokens=sent.tokens, sentence_tokens=sentence_tokens, normal_tokens=normal_tokens)
 
         return Sentence(sent.text, sentence_tokens, normal_tokens, word_list, words, syn_vivo, number, sentence_start)
-
-    @staticmethod
-    def _get_normal_tokens_and_words(sen_tokens, sentence_text):
-        """список слов в родном порядке"""
-
-        word_tokens = [sen_token for sen_token in sen_tokens if sen_token.type == "word"]
-
-        word_texts = [word_token.text for word_token in word_tokens]
-        normal_words = NLPAnalyzer.morph_dict.parse(word_texts)
-
-        """список токенов в родном порядке"""
-        normal_tokens = []
-        counter = 0
-        for num, sen_token in enumerate(sen_tokens):
-            if counter < word_tokens.__len__() and sen_token.text == word_tokens[counter].text:
-                normal_token = SentenceToken(normal_words[counter], type="word", num=num,
-                                             start=sen_token.start, stop=sen_token.stop,
-                                             source_sentence_text=sentence_text)
-                normal_tokens.append(normal_token)
-                counter = counter + 1
-            else:
-                normal_tokens.append(copy.deepcopy(sen_token))
-
-        """список слов в родном порядке"""
-        sentence_words = []
-        for i in range(word_texts.__len__()):
-            sen_token = word_tokens[i]
-            normal_word = normal_words[i]
-            sen_word = SentenceWord(
-                sen_token, normal_word,
-                rating=1, num=i, source_sentence_text=sentence_text)
-            sentence_words.append(sen_word)
-
-        return normal_tokens, sentence_words

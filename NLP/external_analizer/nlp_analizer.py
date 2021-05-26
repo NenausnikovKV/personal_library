@@ -20,7 +20,7 @@ class NLPAnalyzer():
         morph_dict = new_morph_dict
 
     @classmethod
-    def divide_text_to_sents(cls, text):
+    def divide_text_to_natasha_sents(cls, text):
         def correct_token_id(sent_tokens):
             """
             Расшифровываем строковое представление нумерации в синтаксическом дереве.

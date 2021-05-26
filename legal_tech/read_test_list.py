@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 
-from NLP.external_analizer.sentence_analizer import SentenceAnalyzer
+from NLP.external_analizer.natasha_sent import SentenceAnalyzer
 from NLP.sentence_stage.sentence import Sentence
 
 from file_processing.file_processing import get_general_address

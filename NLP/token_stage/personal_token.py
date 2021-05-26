@@ -43,6 +43,7 @@ class SentenceToken(Token):
         self.start = start
         self.stop = stop
         self.num = num
+        self.source_sentence = source_sentence_text
 
     @staticmethod
     def find_normal_token_text(token, normal_tokens):
