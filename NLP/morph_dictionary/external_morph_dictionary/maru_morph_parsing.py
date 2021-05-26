@@ -12,7 +12,7 @@ class MaruMorphDictionary(MorphDictionary):
 
     def parse(self, word_list):
         analyzed_lemmas = self.dictionary.analyze(word_list)
-        normal_words = [lemma.word for lemma in analyzed_lemmas]
+        normal_words = [lemma.lemma for lemma in analyzed_lemmas]
         return normal_words
 
 
