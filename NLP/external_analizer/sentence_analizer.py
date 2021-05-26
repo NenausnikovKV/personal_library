@@ -1,25 +1,20 @@
 
 from natasha import NewsEmbedding, NewsMorphTagger, NewsSyntaxParser, Doc
 
-
-from NLP.external_analizer.morph_dictionary import MaruMorphDictionary, PymorphyMorphDictionary
-from NLP.external_analizer.segmenter import NatashaSegmenter
+from NLP.external_analizer.morph_dictionaries.external_morph_dictionary.maru_morph_parsing import MaruMorphDictionary
+from NLP.external_analizer.morph_dictionaries.external_morph_dictionary.pymorphy_morph_dictionary import \
+    PymorphyMorphDictionary
 from NLP.external_analizer.syntax_analyzer import SyntaxAnalizer
 
 
-class SentenceAnalyzer():
+
+class SentenceAnalyzer(morph_dict = PymorphyMorphDictionary()):
 
     # синтаксическая разметка и морфология с учетом синтаксиса
     syntax_analizer = SyntaxAnalizer()
-    segmenter = NatashaSegmenter()
     morph_dict = PymorphyMorphDictionary()
+    # morph_dict = MaruMorphDictionary()
 
-    @staticmethod
-    def init_maru_morph_analizer():
-        # получение нормальной формы слова
-        global morph_dict
-        morph_dict = MaruMorphDictionary()
-        # morph_dict = PymorphyMorphDictionary()
 
     @classmethod
     def divide_text_to_sents(cls, text):
@@ -29,7 +24,8 @@ class SentenceAnalyzer():
 
         def correct_token_id(sent_tokens):
             """
-            преобразуем строку в число для id и head_id
+            Расшифровываем строковое представление нумерации в синтаксическом дереве.
+            Преобразуем строку в число для id и head_id.
             """
             for token in sent_tokens:
                 head_id = token.head_id

@@ -1,4 +1,4 @@
-import maru
+
 from NLP.morph_dictionary.morph_dictionary import MorphDictionary
 
 
@@ -8,6 +8,8 @@ class MaruMorphDictionary(MorphDictionary):
         """
             Maru() - словарь на основе обучения нейронных сетей, работает при подачи списка слов предложения
         """
+        # не загружать библиотеку без прямого вызова
+        import maru
         self.dictionary = maru.get_analyzer(tagger='crf', lemmatizer='pymorphy')
 
     def parse(self, word_list):
