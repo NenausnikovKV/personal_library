@@ -1,25 +1,27 @@
+import natasha
 
-from natasha import NewsEmbedding, NewsMorphTagger, NewsSyntaxParser, Doc
-
-from NLP.external_analizer.morph_dictionaries.external_morph_dictionary.maru_morph_parsing import MaruMorphDictionary
-from NLP.external_analizer.morph_dictionaries.external_morph_dictionary.pymorphy_morph_dictionary import \
-    PymorphyMorphDictionary
-from NLP.external_analizer.syntax_analyzer import SyntaxAnalizer
+from NLP.external_analizer.morph_dictionaries.maru_morph_parsing import MaruMorphDictionary
+from NLP.external_analizer.morph_dictionaries.pymorphy_morph_dictionary import PymorphyMorphDictionary
+from NLP.external_analizer.syntax_analizer.syntax_analyzer import SyntaxAnalizer
 
 
+class SentenceAnalyzer():
 
-class SentenceAnalyzer(morph_dict = PymorphyMorphDictionary()):
-
-    # синтаксическая разметка и морфология с учетом синтаксиса
-    syntax_analizer = SyntaxAnalizer()
+    # создаем классы для анализа текста предложения для всего проекта
+    segmenter = natasha.Segmenter()
     morph_dict = PymorphyMorphDictionary()
-    # morph_dict = MaruMorphDictionary()
+    syntax_analizer = SyntaxAnalizer()
+
+
+    @staticmethod
+    def change_morph_dictionary(new_morph_dict = PymorphyMorphDictionary()):
+        # new_morph_dict = MaruMorphDictionary()
+        global morph_dict
+        morph_dict = new_morph_dict
 
 
     @classmethod
     def divide_text_to_sents(cls, text):
-
-        from natasha import Doc
 
 
         def correct_token_id(sent_tokens):
@@ -36,16 +38,14 @@ class SentenceAnalyzer(morph_dict = PymorphyMorphDictionary()):
                 token.id = int(id)
             return sent_tokens
 
-        doc = Doc(text)
+        doc = natasha.Doc(text)
         doc.segment(cls.segmenter)
         doc.tag_morph(cls.syntax_analizer.morph_tagger)
-        try:
-            doc.parse_syntax(cls.syntax_analizer.syntax_parser)
-            for sent in doc.sents:
-                sent.tokens = correct_token_id(sent.tokens)
 
-        except Exception:
-            print(Exception)
+        doc.parse_syntax(cls.syntax_analizer.syntax_parser)
+        for sent in doc.sents:
+            sent.tokens = correct_token_id(sent.tokens)
+
         return list(doc.sents)
 
     @staticmethod
@@ -57,12 +57,12 @@ class SentenceAnalyzer(morph_dict = PymorphyMorphDictionary()):
     @staticmethod
     def divide_sentence_text_to_tokens(sentence_text):
         sentence_text = sentence_text.replace('\n', ' ')
-        doc = Doc(sentence_text)
+        doc = natasha.Doc(sentence_text)
         doc.segment(SentenceAnalyzer.segmenter)
         sent = doc.sents[0]
         return list(sent.syntax.tokens)
 
     @staticmethod
-    def divide_text_to_sentence_plan_texts(text):
+    def divide_text_to_sentence_plain_texts(text):
         sents = SentenceAnalyzer.divide_text_to_sents(text)
         return [sentence.text for sentence in sents]

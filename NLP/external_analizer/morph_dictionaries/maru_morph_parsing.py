@@ -1,5 +1,4 @@
-
-from NLP.morph_dictionary.morph_dictionary import MorphDictionary
+from NLP.external_analizer.morph_dictionaries.morph_dictionary import MorphDictionary
 
 
 class MaruMorphDictionary(MorphDictionary):

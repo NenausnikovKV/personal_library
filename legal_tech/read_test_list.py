@@ -16,7 +16,7 @@ def _extract_text_check_blocks(file_text):
         separator = line.find(" - ")
         block_name = line[:separator]
         block_value = line[separator + 3:]
-        block_sentences = SentenceAnalyzer.divide_text_to_sentence_plan_texts(block_value)
+        block_sentences = SentenceAnalyzer.divide_text_to_sentence_plain_texts(block_value)
         for block_sentence in block_sentences:
             blocks[block_name].append(Sentence.initial_from_sentence_text(block_sentence))
     return text_num, blocks
