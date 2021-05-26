@@ -35,13 +35,21 @@ class NLPAnalyzer():
                 token.id = int(id)
             return sent_tokens
 
+
+        def correct_token_position_conserning_sentence(sent_tokens, sentence_start):
+            for num, token in enumerate(sent_tokens):
+                token.start = token.start - sentence_start
+                token.stop = token.stop - sentence_start
+            return sent_tokens
+
         doc = natasha.Doc(text)
         doc.segment(cls.segmenter)
         doc.tag_morph(cls.syntax_analizer.morph_tagger)
-
         doc.parse_syntax(cls.syntax_analizer.syntax_parser)
-        for sent in doc.sents:
-            sent.tokens = correct_token_id(sent.tokens)
 
-        return list(doc.sents)
+        sents = list(doc.sents)
+        for sent in sents:
+            sent.tokens = correct_token_id(sent.tokens)
+            sent.tokens = correct_token_position_conserning_sentence(sent.tokens, sentence_start=sent.start)
+        return sents
 

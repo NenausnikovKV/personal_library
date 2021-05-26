@@ -38,7 +38,7 @@ class Token():
 
 class SentenceToken(Token):
 
-    def __init__(self, text, type, num =-1, start=-1, stop=-1):
+    def __init__(self, text, type, num =-1, start=-1, stop=-1, source_sentence_text=None):
         super().__init__(text, type)
         self.start = start
         self.stop = stop
