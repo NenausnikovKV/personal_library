@@ -3,9 +3,8 @@ from collections import namedtuple
 
 from natasha import NewsEmbedding, Segmenter, NewsMorphTagger, NewsSyntaxParser
 from yargy.tokenizer import MorphTokenizer
-
-from NLP.dictionary_library.morphDictionary import MorphDictionary
-from NLP.document_stage.text import Text
+from NLP.external_analizer.morph_dictionary import MorphDictionary
+from NLP.text_stage.text import Text
 from NLP.processing_plan_text import preprocessing
 from file_processing.file_processing import get_general_address, get_anthology_elements
 
@@ -30,11 +29,8 @@ class Agreement(Text):
         """
         agrement_start_sample = r"\wогласие\b\s+\d+"
         agreement_texts = re.split(agrement_start_sample, file_text)
-        i = 0
-        for text in agreement_texts:
-            if text == "":
-                agreement_texts.pop(i)
-            i += 1
+        agreement_texts = [text for text in agreement_texts if text != ""]
+
         return agreement_texts
 
     def replace_element_list(self, elements, replacement_word):
@@ -50,9 +46,10 @@ class Agreement(Text):
         address = get_general_address("in/anthology/data")
         datas = get_anthology_elements(address)
 
-        self.replace_element_list(countries, "[страна]")
-        self.replace_element_list(datas, "[данные]")
-        a=0
+        # при применении данного метода становится необходимо изменять его синтаксическую структуру,
+        # а пока я этого не далаю
+        # self.replace_element_list(countries, "[страна]")
+        # self.replace_element_list(datas, "[данные]")
 
 
 

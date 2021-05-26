@@ -1,14 +1,13 @@
 import copy
 from operator import attrgetter
 from natasha import Segmenter, NewsEmbedding, NewsMorphTagger, NewsSyntaxParser, Doc
-from yargy.tokenizer import MorphTokenizer
 
 from NLP.dictionary_library.morphDictionary import MorphDictionary
-from NLP.document_stage.text import Text
+from NLP.text_stage.text import Text
 from NLP.sentence_stage.sentence import Sentence
 from NLP.token_stage.personal_token import Token
-from graph_representation.relation import Relation
-from graph_representation.vivo import Vivo
+from graph_representation.vivo.relation import Relation
+from graph_representation.vivo.vivo import Vivo
 
 
 def clear_puctuations(sentence):

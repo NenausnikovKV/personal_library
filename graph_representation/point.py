@@ -1,8 +1,6 @@
 import copy
 from filecmp import cmp
 
-from word_stage.nlp_exceptions import IncorrectSumAttributes
-
 
 class RelatedPoint():
     def __init__(self, text, rating):
@@ -11,8 +9,7 @@ class RelatedPoint():
 
     def __add__(self, other):
         result = copy.copy(self)
-        if result.text != other:
-            raise IncorrectSumAttributes()
+        assert result.text != other, "Неверные параметры суммы"
         result.rating = result.rating + other.rating
 
 class Point:
@@ -22,8 +19,7 @@ class Point:
 
     def __add__(self, other):
         result = copy.copy(self)
-        if result.text != other:
-            raise IncorrectSumAttributes()
+        assert result.text != other, "Неверные параметры суммы"
         for key in other.related_points:
             related_point = other.related_points[key]
             if not result.related_points.get(key):

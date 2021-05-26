@@ -3,12 +3,11 @@ from collections import namedtuple
 from operator import attrgetter
 
 from NLP.token_stage.word import SentenceWord
-from graph_representation.relation import Relation
-from legal_tech.component_sentence import VivoSentence, RelevantExcert
-from legal_tech.components import ResultComponent
+from legal_tech.components.result_component import ResultComponent
 from NLP.sentence_stage.sentence import Sentence
-from graph_representation.vivo import Vivo
-
+from graph_representation.vivo.vivo import Vivo
+from legal_tech.excerts.relevant_excert import RelevantExcert
+from legal_tech.excerts.vivo_sentence import VivoSentence
 
 
 class Suspect:
@@ -346,7 +345,7 @@ def divide_sentence(sentence_component_relevance, result_components):
 
     # result_component_sentences.append(
     #     ComponentAndSentence(sentence=origin_sentence, components=result_component_list))
-    #     result_component = ResultComponent(win_suspect.component.name, win_suspect.component.vivo,
+    #     result_component = ResultComponent(win_suspect.component.name, win_suspect.component.vivos,
     #                                        win_suspect.component.necessity, [win_suspect.feature])
     #     result_component_sentences.append(ComponentAndSentence(sentence=origin_sentence, components=[result_component]))
     #

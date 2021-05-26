@@ -1,10 +1,10 @@
-import json
 import os
 
 
 
 def get_general_address(local_address):
-    path = os.getcwd()[:os.getcwd().find("source")] + local_address
+    cur_dir = os.getcwd()
+    path = os.getcwd()[:cur_dir.find("source")] + local_address
     return path
 
 def get_library_address(local_address):
@@ -27,12 +27,12 @@ def clear_directory(directory):
 
 def read_directory(directory_address):
     file_names = os.listdir(directory_address)
-    file_texts = []
+    file_texts = dict()
     for file_name in file_names:
         file_address = "{0}\\{1}".format(directory_address, file_name)
         with open(file_address, "r", encoding="utf-8") as file:
             file_text = file.read()
-            file_texts.append(file_text)
+            file_texts[file_name] = file_text
     return file_texts
 
 def write_directory(directory_address, file_names, data_list):

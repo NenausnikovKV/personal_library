@@ -5,11 +5,11 @@ from operator import attrgetter
 
 from natasha import Doc
 
-from NLP.syntax_analyzer import SyntaxAnalyzer
+from NLP.external_analizer.sentence_analizer import SentenceAnalyzer
 from NLP.token_stage.word import SentenceWord
 from NLP.token_stage.personal_token import SentenceToken, Token
-from graph_representation.relation import Relation
-from graph_representation.vivo import Vivo
+from graph_representation.vivo.relation import Relation
+from graph_representation.vivo.vivo import Vivo
 
 
 class Sentence:
@@ -31,14 +31,14 @@ class Sentence:
 
     @classmethod
     def initial_from_sentence_text(cls, sentence_text, number=-1, start=-1, ):
-        sent = SyntaxAnalyzer.get_sent_from_sentence_text(sentence_text)
+        sent = SentenceAnalyzer.get_sent_from_sentence_text(sentence_text)
         # todo перепись переменной start неочевидн, прописать более очевидный способ записи
         sentence = cls.initial_from_natasha_sent(sent, start, number)
         sentence.start = start
         return sentence
 
     @classmethod
-    def initial_from_natasha_sent(cls, sent, sentence_start_in_text = -1, number=-1):
+    def initial_from_natasha_sent(cls, sent, sentence_start_in_text=-1, number=-1):
 
         def get_tokens(sent_tokens, sentence_start):
             tokens = []
@@ -98,11 +98,8 @@ class Sentence:
                 result.words[key] = other.words[key]
             else:
                 result.words[key].rating += other.words[key].rating
-        try:
-            result.vivo = result.vivo + other.vivo
-        except:
-            pass
 
+        result.vivo = result.vivo + other.vivo
         result.num = None
         result.start = None
         result.stop = None
@@ -322,45 +319,6 @@ class Sentence:
                 return norm_token.text
         return None
 
-    # todo по моему я перепипсал предложение с обладание виво всегда, поэтому не уверен в необходимости этого метода впринципе
-    def get_sentence_vivo(self):
-
-        copy_sentence = copy.deepcopy(self)
-        # copy_sentence.clear_puctuations()
-
-        # обработка поступившего текста
-        doc = Doc(copy_sentence.text)
-        doc.segment(SyntaxAnalyzer.segmenter)
-        doc.tag_morph(SyntaxAnalyzer.morph_tagger)
-        doc.parse_syntax(SyntaxAnalyzer.syntax_parser)
-        sent = doc.sents[0]
-
-        tokens = list(sent.syntax.tokens)
-        for token in tokens:
-            token.head_id = int(str(token.head_id).split("_")[1])
-            token.id = int(str(token.id).split("_")[1])
-        head_id_tokens = sorted(tokens, key=attrgetter("head_id"))
-        token_dict = dict([token.id, token] for token in tokens)
-
-        relations = []
-        count = 0
-        for token in head_id_tokens:
-            count += 1
-            # смещение на 1 так как 0 - это корень
-            token1 = token
-            text1 = Sentence.get_normal_form_token(copy_sentence, token1.id - 1)
-            # 0 связан с корем древа
-            if token.head_id == 0:
-                continue
-            token2 = token_dict[token.head_id]
-            text2 = Sentence.get_normal_form_token(copy_sentence, token2.id - 1)
-
-            relation = Relation(text1, text2, rating=1)
-            relations.append(relation)
-        sentence_vivo = Vivo(relations=relations)
-        sentence_vivo.clear_punctuation_marks()
-        self.vivo = sentence_vivo
-
     # ------------------------------------------------------------------------------------------------------------------
 
     # внутренние операции
@@ -369,7 +327,8 @@ class Sentence:
     @staticmethod
     def _recognise_tokens(sentence_text):
         """Выделение токенов из предложенного текста"""
-        sen_tokens = SyntaxAnalyzer.divide_sentence_text_to_tokens(sentence_text)
+        SentenceAnalyzer.init_syntax_analizer()
+        sen_tokens = SentenceAnalyzer.divide_sentence_text_to_tokens(sentence_text)
         tokens = []
         stop = 0
         for token_num, token in enumerate(sen_tokens):
@@ -382,17 +341,19 @@ class Sentence:
     @staticmethod
     def _get_normal_tokens_and_words(sen_tokens, sentence_text):
         """список слов в родном порядке"""
+
+        SentenceAnalyzer.init_maru_morph_analizer()
         word_tokens = [sen_token for sen_token in sen_tokens if sen_token.type == "word"]
 
         word_texts = [word_token.text for word_token in word_tokens]
-        normal_words = SyntaxAnalyzer.morph_dict.parse(word_texts)
+        normal_words = SentenceAnalyzer.morph_dict.parse(word_texts)
 
         """список токенов в родном порядке"""
         normal_tokens = []
         counter = 0
         for num, sen_token in enumerate(sen_tokens):
             if counter < word_tokens.__len__() and sen_token.text == word_tokens[counter].text:
-                normal_token = SentenceToken(normal_words[counter].lemma, type="word", num=num,
+                normal_token = SentenceToken(normal_words[counter], type="word", num=num,
                                              start=sen_token.start, stop=sen_token.stop)
                 normal_tokens.append(normal_token)
                 counter = counter + 1
@@ -405,13 +366,14 @@ class Sentence:
             sen_token = word_tokens[i]
             normal_word = normal_words[i]
             sen_word = SentenceWord(
-                sen_token, normal_word.lemma, speech_part=normal_word.tag.pos, grammemes=normal_word.tag,
+                sen_token, normal_word,
                 rating=1, num=i, source_sentence_text=sentence_text)
             sentence_words.append(sen_word)
 
         return normal_tokens, sentence_words
 
     # ------------------------------------------------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
     text1 = "я люблю есть сыр"
