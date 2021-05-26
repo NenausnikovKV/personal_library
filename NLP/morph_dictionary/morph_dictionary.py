@@ -13,17 +13,6 @@ class MorphDictionary:
     def parse(self, word_list):
         pass
 
-class MaruMorphDictionary(MorphDictionary):
-
-    def __init__(self):
-        """
-            Maru() - словарь на основе обучения нейронных сетей, работает при подачи списка слов предложения
-        """
-        self.dictionary = Maru()
-
-    def parse(self, word_list):
-            return self.dictionary.parse(word_list)
-
 class PymorphyMorphDictionary(MorphDictionary):
     def __init__(self):
         """
