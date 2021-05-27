@@ -99,7 +99,7 @@ class Text:
         """
         Выделяем тексты предложений и создаем экземпляры предложений
         """
-        natasha_sents = SentenceAnalyzer.divide_text_to_natasha_sents(file_text)
+        natasha_sents = NatashaSent.divide_text_to_natasha_sents(file_text)
         sentences = {}
         for num, sent in enumerate(natasha_sents):
             key = hash(sent.text)

@@ -2,7 +2,6 @@ import copy
 from operator import attrgetter
 
 from NLP.external_analizer.nlp_analizer import NLPAnalyzer
-from NLP.sentence_stage.sentence import Sentence
 from NLP.token_stage.personal_token import Token, SentenceToken
 from NLP.token_stage.word import SentenceWord
 from graph_representation.vivo.relation import Relation
@@ -92,5 +91,5 @@ def get_sentence_from_natasha_sent(sent, number=-1, sentence_start=-1):
     words = SentenceWord.get_word_dict_from_word_list(word_list)
     normal_tokens = _get_normal_tokens(sentence_tokens, word_list, sentence_text=sent.text)
     syn_vivo = _get_syntax_vivo(sent_tokens=sent.tokens, sentence_tokens=sentence_tokens, normal_tokens=normal_tokens)
-
+    from NLP.sentence_stage.sentence import Sentence
     return Sentence(sent.text, sentence_tokens, normal_tokens, word_list, words, syn_vivo, number, sentence_start)

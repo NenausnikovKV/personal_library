@@ -20,7 +20,7 @@ class NatashaSent:
 
 
     @staticmethod
-    def get_sentence_from_sentence_text(sentence_text, sentence_num, sentence_start):
+    def get_sentence_from_sentence_text(sentence_text, sentence_num=-1, sentence_start=-1):
         """
         Получение экземпляра класса Sentence из предложения тексте (plain_text)
         """
