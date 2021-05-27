@@ -55,7 +55,7 @@ def _get_normal_words(sentence_tokens, sentence_text):
     normal_word_texts = NLPAnalyzer.morph_dict.parse(word_texts)
 
     sentence_normal_words = []
-    for token_num, word_token in enumerate(word_tokens.__len__()):
+    for token_num, word_token in enumerate(word_tokens):
         normal_word = normal_word_texts[token_num]
         sen_word = SentenceWord(word_token, normal_word, rating=1, num=token_num,
                                 source_sentence_text=sentence_text)
@@ -85,7 +85,7 @@ def _get_normal_tokens(sentence_tokens, sentence_normal_words, sentence_text):
     return normal_tokens
 
 
-def get_sentence_from_natasha_sent(sent, sentence_start=-1, number=-1):
+def get_sentence_from_natasha_sent(sent, number=-1, sentence_start=-1):
 
     sentence_tokens = _get_sentence_tokens(sent.tokens, sent.text)
     word_list = _get_normal_words(sentence_tokens, sentence_text=sent.text)

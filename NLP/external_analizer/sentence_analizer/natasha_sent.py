@@ -1,13 +1,9 @@
-import copy
-from operator import attrgetter
 
 import natasha
 
 from NLP.external_analizer.nlp_analizer import NLPAnalyzer
+from NLP.external_analizer.sentence_analizer import natasha_sent_adapter
 from NLP.token_stage.personal_token import SentenceToken, Token
-from NLP.token_stage.word import SentenceWord
-from graph_representation.vivo.relation import Relation
-from graph_representation.vivo.vivo import Vivo
 
 
 class NatashaSent:
@@ -23,14 +19,13 @@ class NatashaSent:
         return sent
 
 
-
     @staticmethod
-    def get_sentence_from_sentence_text(sentence_text):
+    def get_sentence_from_sentence_text(sentence_text, sentence_num, sentence_start):
         """
         Получение экземпляра класса Sentence из предложения тексте (plain_text)
         """
         natasha_sent = NatashaSent._get_sent_from_sentence_text(sentence_text)
-        sentence = NatashaSent._get_sentence_from_natasha_sent(natasha_sent)
+        sentence = natasha_sent_adapter.get_sentence_from_natasha_sent(natasha_sent, sentence_num, sentence_start)
         return sentence
 
 
@@ -71,7 +66,7 @@ class NatashaSent:
         sents = NLPAnalyzer.divide_text_to_natasha_sents(text)
         sentences = list()
         for num, sent in enumerate(sents):
-            sentence = NatashaSent._get_sentence_from_natasha_sent(sent, sent.start, num)
+            sentence = natasha_sent_adapter.get_sentence_from_natasha_sent(sent, sent.start, num)
             sentences.append(sentence)
         return sentences
 
@@ -103,6 +98,4 @@ if __name__ == "__main__":
 
     sentence_text_list = NatashaSent.divide_text_to_sentence_plain_texts(file_text)
     sentences = NatashaSent.divide_text_to_sentences(file_text)
-
-
-    pass
+    a = 90

@@ -1,10 +1,8 @@
 """Предложения согласия и входящих в него объектов"""
 
 import copy
-from operator import attrgetter
 
-from NLP.external_analizer.nlp_analizer import NLPAnalyzer
-from NLP.external_analizer.natasha_sent import NatashaSent
+from NLP.external_analizer.sentence_analizer.natasha_sent import NatashaSent
 from NLP.token_stage.word import SentenceWord
 from NLP.token_stage.personal_token import SentenceToken, Token
 from graph_representation.vivo.relation import Relation
@@ -29,13 +27,8 @@ class Sentence:
         self.vivo = syn_vivo
 
     @classmethod
-    def initial_from_sentence_text(cls, sentence_text, number=-1, start=-1, ):
-
-        sent = NatashaSent._get_sent_from_sentence_text(sentence_text)
-        # todo перепись переменной start неочевидн, прописать более очевидный способ записи
-        sentence = NatashaSent._get_sentence_from_natasha_sent(sent, start, number)
-
-        sentence.start = start
+    def initial_from_sentence_excerpt(cls, sentence_text, sentence_num=-1, sentence_start=-1):
+        sentence = NatashaSent.get_sentence_from_sentence_text(sentence_text, sentence_num, sentence_start)
         return sentence
 
 
@@ -71,7 +64,7 @@ class Sentence:
         if self.text.find(other_text) < 0:
             return None
         new_text = self.text.replace(other_text, "")
-        return Sentence.initial_from_sentence_text(new_text)
+        return Sentence.initial_from_sentence_excerpt(new_text)
 
     def __str__(self):
         return self.text
@@ -79,8 +72,9 @@ class Sentence:
     def __eq__(self, other):
         return self.text == other.text
 
-    # Изменение содержания предложений
+
     # ------------------------------------------------------------------------------------------------------------------
+    # обработка содержания предложения
 
     def remove_word(self, word_text):
         """
@@ -235,10 +229,19 @@ class Sentence:
             if normal_token_dict.get(hash(mark)):
                 self.remove_word(mark)
 
+    def get_normal_form_token(self, token_num):
+        start = self.tokens[token_num].start
+        for norm_token in self.normal_tokens:
+            if norm_token.start == start:
+                return norm_token.text
+        return None
+
+
     # ------------------------------------------------------------------------------------------------------------------
 
-    #  Сравнения с другими предложениями
+
     # ------------------------------------------------------------------------------------------------------------------
+    #  Сравнения с другими предложениями
 
     def part_of(self, other):
         """
@@ -268,15 +271,6 @@ class Sentence:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    # получение компонентов из предложения
-    # ------------------------------------------------------------------------------------------------------------------
-    def get_normal_form_token(self, token_num):
-        start = self.tokens[token_num].start
-        for norm_token in self.normal_tokens:
-            if norm_token.start == start:
-                return norm_token.text
-        return None
-
     # ------------------------------------------------------------------------------------------------------------------
 
     # внутренние операции
@@ -295,8 +289,8 @@ if __name__ == "__main__":
     text1 = "я люблю есть сыр"
     text2 = "я люблю сыр с плесенью"
 
-    sentence1 = Sentence.initial_from_sentence_text(text1)
-    sentence2 = Sentence.initial_from_sentence_text(text2)
+    sentence1 = Sentence.initial_from_sentence_excerpt(text1)
+    sentence2 = Sentence.initial_from_sentence_excerpt(text2)
     proximity = sentence1.compare(sentence2)
 
     pass
