@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """Модуль хранения согласия и входящих в него объектов"""
-from NLP.external_analizer.natasha_sent import SentenceAnalyzer, NatashaSent
+from NLP.external_analizer.natasha_sent import NatashaSent
 from NLP.sentence_stage.sentence import Sentence
 from NLP.token_stage.word import TextWord
 

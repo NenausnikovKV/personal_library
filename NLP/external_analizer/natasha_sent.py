@@ -40,6 +40,8 @@ class NatashaSent:
             sentence = NatashaSent.get_sentence_from_natasha_sent(sent, sent.start, num)
             sentences.append(sentence)
 
+
+    # ------------------------------------------------------------------------------------------------------------------
     @staticmethod
     def get_normal_words(sentence_tokens, sentence_text):
 
@@ -76,8 +78,6 @@ class NatashaSent:
             else:
                 normal_tokens.append(copy.deepcopy(sen_token))
         return normal_tokens
-
-
 
     @staticmethod
     def get_sentence_from_natasha_sent(sent, sentence_start=-1, number=-1):
@@ -124,3 +124,5 @@ class NatashaSent:
         syn_vivo = get_syntax_vivo(sent_tokens=sent.tokens, sentence_tokens=sentence_tokens, normal_tokens=normal_tokens)
 
         return Sentence(sent.text, sentence_tokens, normal_tokens, word_list, words, syn_vivo, number, sentence_start)
+
+    # ------------------------------------------------------------------------------------------------------------------

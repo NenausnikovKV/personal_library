@@ -30,9 +30,11 @@ class Sentence:
 
     @classmethod
     def initial_from_sentence_text(cls, sentence_text, number=-1, start=-1, ):
+
         sent = NatashaSent.get_sent_from_sentence_text(sentence_text)
         # todo перепись переменной start неочевидн, прописать более очевидный способ записи
         sentence = NatashaSent.get_sentence_from_natasha_sent(sent, start, number)
+
         sentence.start = start
         return sentence
 
@@ -116,14 +118,16 @@ class Sentence:
         sentence_tokens = get_tokens(sent.tokens, sent.start)
 
 
-        word_list = NatashaSent.get_normal_words(sentence_tokens, sentence_text=sent.text)
+        word_list = cls.get_normal_words(sentence_tokens, sentence_text=sent.text)
         words = SentenceWord.get_word_dict_from_word_list(word_list)
-        normal_tokens = NatashaSent.get_normal_tokens(sentence_tokens, word_list, sent.text)
+        normal_tokens = cls.get_normal_tokens(sentence_tokens, word_list, sent.text)
 
         syn_vivo = get_syntax_vivo(sent.tokens, sentence_tokens)
         sentence = cls(sent.text, sentence_tokens, normal_tokens, word_list, words, syn_vivo, num=number,
                        start=sentence_start_in_text)
         return sentence
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __add__(self, other):
 
@@ -378,7 +382,6 @@ class Sentence:
             sen_token = SentenceToken(token.text, Token.define_type(token.text), num=token_num, start=start, stop=stop)
             tokens.append(sen_token)
         return tokens
-
 
     # ------------------------------------------------------------------------------------------------------------------
 
