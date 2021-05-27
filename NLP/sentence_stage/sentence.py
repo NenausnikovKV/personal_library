@@ -1,11 +1,8 @@
 """Предложения согласия и входящих в него объектов"""
 
 import copy
-from operator import attrgetter
 
-from natasha import Doc
-
-from NLP.external_analizer.sentence_analizer import SentenceAnalyzer
+from NLP.external_analizer.sentence_analizer.natasha_sent import NatashaSent
 from NLP.token_stage.word import SentenceWord
 from NLP.token_stage.personal_token import SentenceToken, Token
 from graph_representation.vivo.relation import Relation
@@ -30,58 +27,12 @@ class Sentence:
         self.vivo = syn_vivo
 
     @classmethod
-    def initial_from_sentence_text(cls, sentence_text, number=-1, start=-1, ):
-        sent = SentenceAnalyzer.get_sent_from_sentence_text(sentence_text)
-        # todo перепись переменной start неочевидн, прописать более очевидный способ записи
-        sentence = cls.initial_from_natasha_sent(sent, start, number)
-        sentence.start = start
+    def initial_from_sentence_excerpt(cls, sentence_text, sentence_num=-1, sentence_start=-1):
+        sentence = NatashaSent.get_sentence_from_sentence_text(sentence_text, sentence_num, sentence_start)
         return sentence
 
-    @classmethod
-    def initial_from_natasha_sent(cls, sent, sentence_start_in_text=-1, number=-1):
 
-        def get_tokens(sent_tokens, sentence_start):
-            tokens = []
-            for num, token in enumerate(sent_tokens):
-                tokens.append(SentenceToken(token.text, Token.define_type(token.text), num=num,
-                                            start=token.start - sentence_start, stop=token.stop - sentence_start))
-            return tokens
-
-        def get_syntax_vivo(sent_tokens, sentence_tokens):
-            """
-            переписываем связанные слова после работы синтаксического анализитора
-            """
-
-            head_id_sorted_tokens = sorted(sent_tokens, key=attrgetter("head_id"))
-            token_dict = {token.id: token for token in sent_tokens}
-
-            # syn_vivo = Vivo()
-            relations = []
-            for token in head_id_sorted_tokens:
-                # 0 связан с корнем древа
-                if token.head_id == 0:
-                    continue
-
-                # смещение на 1 так как 0 - это корень синтаксического древа
-                token1 = token
-                text1 = SentenceToken.find_normal_token_text(sentence_tokens[token1.id - 1], normal_tokens)
-                token2 = token_dict[token.head_id]
-                text2 = SentenceToken.find_normal_token_text(sentence_tokens[token2.id - 1], normal_tokens)
-                if all([Token.define_type(text1) == "word", Token.define_type(text2) == "word",
-                        token1.id != token2.id]):
-                    relations.append(Relation(text1, text2, rating=1))
-            syn_vivo = Vivo(relations=relations)
-            syn_vivo.normal_relations()
-            return syn_vivo
-
-        # sent.syntax.print()
-        sentence_tokens = get_tokens(sent.tokens, sent.start)
-        normal_tokens, word_list = Sentence._get_normal_tokens_and_words(sentence_tokens, sentence_text=sent.text)
-        words = SentenceWord.get_word_dict_from_word_list(word_list)
-        syn_vivo = get_syntax_vivo(sent.tokens, sentence_tokens)
-        sentence = cls(sent.text, sentence_tokens, normal_tokens, word_list, words, syn_vivo, num=number,
-                       start=sentence_start_in_text)
-        return sentence
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __add__(self, other):
 
@@ -113,7 +64,7 @@ class Sentence:
         if self.text.find(other_text) < 0:
             return None
         new_text = self.text.replace(other_text, "")
-        return Sentence.initial_from_sentence_text(new_text)
+        return Sentence.initial_from_sentence_excerpt(new_text)
 
     def __str__(self):
         return self.text
@@ -121,8 +72,9 @@ class Sentence:
     def __eq__(self, other):
         return self.text == other.text
 
-    # Изменение содержания предложений
+
     # ------------------------------------------------------------------------------------------------------------------
+    # обработка содержания предложения
 
     def remove_word(self, word_text):
         """
@@ -277,10 +229,19 @@ class Sentence:
             if normal_token_dict.get(hash(mark)):
                 self.remove_word(mark)
 
+    def get_normal_form_token(self, token_num):
+        start = self.tokens[token_num].start
+        for norm_token in self.normal_tokens:
+            if norm_token.start == start:
+                return norm_token.text
+        return None
+
+
     # ------------------------------------------------------------------------------------------------------------------
 
-    #  Сравнения с другими предложениями
+
     # ------------------------------------------------------------------------------------------------------------------
+    #  Сравнения с другими предложениями
 
     def part_of(self, other):
         """
@@ -310,78 +271,16 @@ class Sentence:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    # получение компонентов из предложения
-    # ------------------------------------------------------------------------------------------------------------------
-    def get_normal_form_token(self, token_num):
-        start = self.tokens[token_num].start
-        for norm_token in self.normal_tokens:
-            if norm_token.start == start:
-                return norm_token.text
-        return None
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    # внутренние операции
-    # ------------------------------------------------------------------------------------------------------------------
-
-    @staticmethod
-    def _recognise_tokens(sentence_text):
-        """Выделение токенов из предложенного текста"""
-        SentenceAnalyzer.init_syntax_analizer()
-        sen_tokens = SentenceAnalyzer.divide_sentence_text_to_tokens(sentence_text)
-        tokens = []
-        stop = 0
-        for token_num, token in enumerate(sen_tokens):
-            start = sentence_text.find(token.text, stop)
-            stop = start + len(token.text)
-            sen_token = SentenceToken(token.text, Token.define_type(token.text), num=token_num, start=start, stop=stop)
-            tokens.append(sen_token)
-        return tokens
-
-    @staticmethod
-    def _get_normal_tokens_and_words(sen_tokens, sentence_text):
-        """список слов в родном порядке"""
-
-        SentenceAnalyzer.init_maru_morph_analizer()
-        word_tokens = [sen_token for sen_token in sen_tokens if sen_token.type == "word"]
-
-        word_texts = [word_token.text for word_token in word_tokens]
-        normal_words = SentenceAnalyzer.morph_dict.parse(word_texts)
-
-        """список токенов в родном порядке"""
-        normal_tokens = []
-        counter = 0
-        for num, sen_token in enumerate(sen_tokens):
-            if counter < word_tokens.__len__() and sen_token.text == word_tokens[counter].text:
-                normal_token = SentenceToken(normal_words[counter], type="word", num=num,
-                                             start=sen_token.start, stop=sen_token.stop)
-                normal_tokens.append(normal_token)
-                counter = counter + 1
-            else:
-                normal_tokens.append(copy.deepcopy(sen_token))
-
-        """список слов в родном порядке"""
-        sentence_words = []
-        for i in range(word_texts.__len__()):
-            sen_token = word_tokens[i]
-            normal_word = normal_words[i]
-            sen_word = SentenceWord(
-                sen_token, normal_word,
-                rating=1, num=i, source_sentence_text=sentence_text)
-            sentence_words.append(sen_word)
-
-        return normal_tokens, sentence_words
-
-    # ------------------------------------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
     text1 = "я люблю есть сыр"
     text2 = "я люблю сыр с плесенью"
 
-    sentence1 = Sentence.initial_from_sentence_text(text1)
-    sentence2 = Sentence.initial_from_sentence_text(text2)
+    sentence1 = Sentence.initial_from_sentence_excerpt(text1)
+    sentence2 = Sentence.initial_from_sentence_excerpt(text2)
     proximity = sentence1.compare(sentence2)
 
+    а = 89
     pass
     # sentence1.remove_word(".")

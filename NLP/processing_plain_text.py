@@ -1,6 +1,16 @@
 import os
 import re
 
+from NLP.token_stage.personal_token import Token
+
+
+def clear_puctuations(sentence):
+    punctuation_list = Token.punctuation_list
+    normal_token_dict = dict([hash(token.text), token] for token in sentence.normal_tokens)
+    for mark in punctuation_list:
+        if normal_token_dict.get(hash(mark)):
+            sentence.remove_word(mark)
+
 
 
 def unit_upper_case_register_sequence_sentence(sentence_texts):
