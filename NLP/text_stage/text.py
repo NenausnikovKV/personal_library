@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """Модуль хранения согласия и входящих в него объектов"""
-from NLP.external_analizer.natasha_sent import NatashaSent
+from NLP.external_analizer.sentence_analizer.natasha_sent import NatashaSent
 from NLP.sentence_stage.sentence import Sentence
 from NLP.token_stage.word import TextWord
 
@@ -22,28 +22,49 @@ class Text:
         self.number = number
 
 
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @classmethod
+    def _recognise_sentences(clc, file_text):
+        """
+        Выделяем тексты предложений и создаем экземпляры предложений
+        """
+        sentences = NatashaSent.divide_text_to_sentences(file_text)
+        return sentences
+
+    @classmethod
+    def _get_text_word_dict(clc, sentences):
+        all_sentences_words = {}
+        for sentence in sentences:
+            for word_hash, sen_word in sentence.words.items():
+                if not all_sentences_words.get(word_hash):
+                    all_sentences_words[word_hash] = TextWord(sen_word)
+                else:
+                    all_sentences_words[word_hash].involve_new_source(sentence.words[word_hash])
+        return all_sentences_words
+
     @classmethod
     def get_text_object_from_text(cls, file_text, number=-1):
         """
         Дополнительный конструктор
         """
-        sentences = cls.recognise_sentences(file_text)
-        words = cls._get_words_of_all_sentences(sentences)
-        return cls(file_text, sentences, words, number)
+        sentence_list = cls._recognise_sentences(file_text)
+        words = cls._get_text_word_dict(sentence_list)
+        sentence_dict = {hash(sentence.text): sentence for sentence in sentence_list}
 
+        return cls(file_text, sentence_dict, words, number)
 
+    # ------------------------------------------------------------------------------------------------------------------
     def __str__(self):
         return "text " + str(self.number)
 
-    def __lt__(self, other):
-        return len(self.sentences) < len(other.sentences)
-
-
-    def remove_word(self, text):
-        self.words.pop(hash(text))
+    # ------------------------------------------------------------------------------------------------------------------
+    def remove_word(self, word_text):
+        self.words.pop(hash(word_text))
         for sentence in self.sentences.values():
-            if sentence.words.get(hash(text)):
-                start, stop = sentence.remove_word(text)
+            if sentence.words.get(hash(word_text)):
+                start, stop = sentence.remove_word(word_text)
                 for i in range(start.__len__()):
                     text_start = sentence.start + start[i]
                     text_stop = sentence.start + stop[i]
@@ -82,29 +103,12 @@ class Text:
             text = text + sentence.text
         self.text = text
 
-    @classmethod
-    def _get_words_of_all_sentences(clc, sentences):
-        all_sentences_words = {}
-        for sentence in sentences.values():
-            for word_hash, sen_word in sentence.words.items():
-                if not all_sentences_words.get(word_hash):
-                    all_sentences_words[word_hash] = TextWord(sen_word)
-                else:
-                    all_sentences_words[word_hash].involve_new_source(sentence.words[word_hash])
-        return all_sentences_words
+    # ------------------------------------------------------------------------------------------------------------------
 
 
-    @classmethod
-    def recognise_sentences(clc, file_text):
-        """
-        Выделяем тексты предложений и создаем экземпляры предложений
-        """
-        natasha_sents = NatashaSent.divide_text_to_natasha_sents(file_text)
-        sentences = {}
-        for num, sent in enumerate(natasha_sents):
-            key = hash(sent.text)
-            sentences[key] = NatashaSent._get_sentence_from_natasha_sent(sent, sent.start, num)
-        return sentences
-
+if __name__ == "__main__":
+    file_text = "Я люблю сыр с плесенью. В этом есть что-то благородное."
+    text_objecct = Text.get_text_object_from_text(file_text)
+    a = 89
 
 
