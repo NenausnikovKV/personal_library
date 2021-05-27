@@ -103,7 +103,7 @@ class Text:
         sentences = {}
         for num, sent in enumerate(natasha_sents):
             key = hash(sent.text)
-            sentences[key] = NatashaSent.get_sentence_from_natasha_sent(sent, sent.start, num)
+            sentences[key] = NatashaSent._get_sentence_from_natasha_sent(sent, sent.start, num)
         return sentences
 
 

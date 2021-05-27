@@ -31,101 +31,13 @@ class Sentence:
     @classmethod
     def initial_from_sentence_text(cls, sentence_text, number=-1, start=-1, ):
 
-        sent = NatashaSent.get_sent_from_sentence_text(sentence_text)
+        sent = NatashaSent._get_sent_from_sentence_text(sentence_text)
         # todo перепись переменной start неочевидн, прописать более очевидный способ записи
-        sentence = NatashaSent.get_sentence_from_natasha_sent(sent, start, number)
+        sentence = NatashaSent._get_sentence_from_natasha_sent(sent, start, number)
 
         sentence.start = start
         return sentence
 
-    @staticmethod
-    def get_normal_words(sentence_tokens, sentence_text):
-
-        """Получаем нормальную форму для словесных токенов"""
-
-        word_tokens = [sen_token for sen_token in sentence_tokens if sen_token.type == "word"]
-        word_texts = [word_token.text for word_token in word_tokens]
-        normal_word_texts = NLPAnalyzer.morph_dict.parse(word_texts)
-
-        sentence_normal_words = []
-        for token_num, word_token in enumerate(word_tokens.__len__()):
-            normal_word = normal_word_texts[token_num]
-            sen_word = SentenceWord(word_token, normal_word, rating=1, num=token_num, source_sentence_text=sentence_text)
-            sentence_normal_words.append(sen_word)
-
-        return sentence_normal_words
-
-    @staticmethod
-    def get_normal_tokens(sentence_tokens, sentence_normal_words, sentence_text):
-        """список слов в родном порядке"""
-        word_tokens = [sen_token for sen_token in sentence_tokens if sen_token.type == "word"]
-
-        normal_word_texts = [sentence_word.text for sentence_word in sentence_normal_words]
-
-        """список токенов в родном порядке"""
-        normal_tokens = []
-        counter = 0
-        for num, sen_token in enumerate(sentence_tokens):
-            if counter < word_tokens.__len__() and sen_token.text == word_tokens[counter].text:
-                normal_token = SentenceToken(normal_word_texts[counter], type="word", num=num,
-                                             start=sen_token.start, stop=sen_token.stop, source_sentence_text=sentence_text)
-                normal_tokens.append(normal_token)
-                counter = counter + 1
-            else:
-                normal_tokens.append(copy.deepcopy(sen_token))
-        return normal_tokens
-
-
-    @classmethod
-    def initial_from_natasha_sent(cls, sent, sentence_start_in_text=-1, number=-1):
-
-        def get_tokens(sent_tokens, sentence_start):
-            tokens = []
-            for num, token in enumerate(sent_tokens):
-                tokens.append(SentenceToken(token.text, Token.define_type(token.text), num=num,
-                                            start=token.start - sentence_start, stop=token.stop - sentence_start,
-                                            source_sentence_text=sent.text))
-            return tokens
-
-        def get_syntax_vivo(sent_tokens, sentence_tokens):
-            """
-            переписываем связанные слова после работы синтаксического анализитора
-            """
-
-            head_id_sorted_tokens = sorted(sent_tokens, key=attrgetter("head_id"))
-            token_dict = {token.id: token for token in sent_tokens}
-
-            # syn_vivo = Vivo()
-            relations = []
-            for token in head_id_sorted_tokens:
-                # 0 связан с корнем древа
-                if token.head_id == 0:
-                    continue
-
-                # смещение на 1 так как 0 - это корень синтаксического древа
-                token1 = token
-                text1 = SentenceToken.find_normal_token_text(sentence_tokens[token1.id - 1], normal_tokens)
-                token2 = token_dict[token.head_id]
-                text2 = SentenceToken.find_normal_token_text(sentence_tokens[token2.id - 1], normal_tokens)
-                if all([Token.define_type(text1) == "word", Token.define_type(text2) == "word",
-                        token1.id != token2.id]):
-                    relations.append(Relation(text1, text2, rating=1))
-            syn_vivo = Vivo(relations=relations)
-            syn_vivo.normal_relations()
-            return syn_vivo
-
-        # sent.syntax.print()
-        sentence_tokens = get_tokens(sent.tokens, sent.start)
-
-
-        word_list = cls.get_normal_words(sentence_tokens, sentence_text=sent.text)
-        words = SentenceWord.get_word_dict_from_word_list(word_list)
-        normal_tokens = cls.get_normal_tokens(sentence_tokens, word_list, sent.text)
-
-        syn_vivo = get_syntax_vivo(sent.tokens, sentence_tokens)
-        sentence = cls(sent.text, sentence_tokens, normal_tokens, word_list, words, syn_vivo, num=number,
-                       start=sentence_start_in_text)
-        return sentence
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -373,14 +285,7 @@ class Sentence:
     @staticmethod
     def _recognise_tokens(sentence_text):
         """Выделение токенов из предложенного текста"""
-        sen_tokens = NatashaSent.divide_sentence_text_to_tokens(sentence_text)
-        tokens = []
-        stop = 0
-        for token_num, token in enumerate(sen_tokens):
-            start = sentence_text.find(token.text, stop)
-            stop = start + len(token.text)
-            sen_token = SentenceToken(token.text, Token.define_type(token.text), num=token_num, start=start, stop=stop)
-            tokens.append(sen_token)
+        tokens = NatashaSent.divide_sentence_text_to_tokens(sentence_text)
         return tokens
 
     # ------------------------------------------------------------------------------------------------------------------

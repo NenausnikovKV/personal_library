@@ -4,7 +4,6 @@ from operator import attrgetter
 import natasha
 
 from NLP.external_analizer.nlp_analizer import NLPAnalyzer
-from NLP.sentence_stage.sentence import Sentence
 from NLP.token_stage.personal_token import SentenceToken, Token
 from NLP.token_stage.word import SentenceWord
 from graph_representation.vivo.relation import Relation
@@ -13,116 +12,97 @@ from graph_representation.vivo.vivo import Vivo
 
 class NatashaSent:
 
-    @staticmethod
-    def get_sent_from_sentence_text(sen_text):
-        sents = NLPAnalyzer.divide_text_to_natasha_sents(sen_text)
+    """
+    Методы обработки текста предложения
+    """
+
+    @classmethod
+    def _get_sent_from_sentence_text(cls, sentence_text):
+        sents = NLPAnalyzer.divide_text_to_natasha_sents(sentence_text)
         sent = sents[0]
         return sent
 
+
+
     @staticmethod
-    def divide_text_to_sentence_plain_texts(text):
-        sents = NLPAnalyzer.divide_text_to_natasha_sents(text)
-        return [sentence.text for sentence in sents]
+    def get_sentence_from_sentence_text(sentence_text):
+        """
+        Получение экземпляра класса Sentence из предложения тексте (plain_text)
+        """
+        natasha_sent = NatashaSent._get_sent_from_sentence_text(sentence_text)
+        sentence = NatashaSent._get_sentence_from_natasha_sent(natasha_sent)
+        return sentence
+
 
     @staticmethod
     def divide_sentence_text_to_tokens(sentence_text):
-        sentence_text = sentence_text.replace('\n', ' ')
-        doc = natasha.Doc(sentence_text)
-        doc.segment(NLPAnalyzer.segmenter)
-        sent = doc.sents[0]
-        return list(sent.syntax.tokens)
+        """
+        Разделение предложения на токены библиотеки NAtasha
+        """
+        def get_natasha_sent_tokens(sentence_text):
+            # Получение natasha sent tokens
+            sentence_text = sentence_text.replace('\n', ' ')
+            doc = natasha.Doc(sentence_text)
+            doc.segment(NLPAnalyzer.segmenter)
+            sent = doc.sents[0]
+            sent_tokens = list(sent.syntax.tokens)
+            return sent_tokens
+
+        def get_personal_tokens_from_sent_token(sent_tokens, sentence_text):
+            # Преобразование natasha sent tokens в мои токены Token
+            tokens = list()
+            stop = 0
+            for token_num, token in enumerate(sent_tokens):
+                start = sentence_text.find(token.text, stop)
+                stop = start + len(token.text)
+                sentence_token = SentenceToken(token.text, Token.define_type(token.text), token_num, start=start,
+                                               stop=stop)
+                tokens.append(sentence_token)
+            return tokens
+
+        sent_tokens = get_natasha_sent_tokens(sentence_text)
+        tokens = get_personal_tokens_from_sent_token(sent_tokens, sentence_text)
+
+        return tokens
+
 
     @staticmethod
-    def divide_text_to_sentence(text):
+    def divide_text_to_sentences(text):
         sents = NLPAnalyzer.divide_text_to_natasha_sents(text)
         sentences = list()
         for num, sent in enumerate(sents):
-            sentence = NatashaSent.get_sentence_from_natasha_sent(sent, sent.start, num)
+            sentence = NatashaSent._get_sentence_from_natasha_sent(sent, sent.start, num)
             sentences.append(sentence)
+        return sentences
+
+    @staticmethod
+    def divide_text_to_sentence_plain_texts(text):
+        """
+        Разделение текста на предложения в plain_text
+        """
+        sents = NLPAnalyzer.divide_text_to_natasha_sents(text)
+        return [sentence.text for sentence in sents]
 
 
     # ------------------------------------------------------------------------------------------------------------------
-    @staticmethod
-    def get_normal_words(sentence_tokens, sentence_text):
 
-        """Получаем нормальную форму для словесных токенов"""
 
-        word_tokens = [sen_token for sen_token in sentence_tokens if sen_token.type == "word"]
-        word_texts = [word_token.text for word_token in word_tokens]
-        normal_word_texts = NLPAnalyzer.morph_dict.parse(word_texts)
+    #-------------------------------------------------------------------------------------------------------------------
 
-        sentence_normal_words = []
-        for token_num, word_token in enumerate(word_tokens.__len__()):
-            normal_word = normal_word_texts[token_num]
-            sen_word = SentenceWord(word_token, normal_word, rating=1, num=token_num, source_sentence_text=sentence_text)
-            sentence_normal_words.append(sen_word)
 
-        return sentence_normal_words
 
-    @staticmethod
-    def get_normal_tokens(sentence_tokens, sentence_normal_words, sentence_text):
-        """список слов в родном порядке"""
-        word_tokens = [sen_token for sen_token in sentence_tokens if sen_token.type == "word"]
 
-        normal_word_texts = [sentence_word.text for sentence_word in sentence_normal_words]
 
-        """список токенов в родном порядке"""
-        normal_tokens = []
-        counter = 0
-        for num, sen_token in enumerate(sentence_tokens):
-            if counter < word_tokens.__len__() and sen_token.text == word_tokens[counter].text:
-                normal_token = SentenceToken(normal_word_texts[counter], type="word", num=num,
-                                             start=sen_token.start, stop=sen_token.stop, source_sentence_text=sentence_text)
-                normal_tokens.append(normal_token)
-                counter = counter + 1
-            else:
-                normal_tokens.append(copy.deepcopy(sen_token))
-        return normal_tokens
+if __name__ == "__main__":
+    sentence_text = "я люблю есть сыр"
+    file_text = "я люблю сыр с плесенью. В этом есть что-то благородное."
 
-    @staticmethod
-    def get_sentence_from_natasha_sent(sent, sentence_start=-1, number=-1):
+    tokens = NatashaSent.divide_sentence_text_to_tokens(sentence_text)
+    sentence = NatashaSent.get_sentence_from_sentence_text(sentence_text)
 
-        def get_sentence_tokens(sent_tokens, sent_text):
-            sentence_tokens = []
-            for token_num, token in enumerate(sent_tokens):
-                token_type = Token.define_type(token.text)
-                sentence_token = SentenceToken(token.text, token_type, token_num, token.start, token.stop, source_sentence_text=sent_text)
-                sentence_tokens.append(sentence_token)
-            return sentence_tokens
 
-        def get_syntax_vivo(sent_tokens, sentence_tokens, normal_tokens):
-            """
-            переписываем связанные слова после работы синтаксического анализитора
-            """
+    sentence_text_list = NatashaSent.divide_text_to_sentence_plain_texts(file_text)
+    sentences = NatashaSent.divide_text_to_sentences(file_text)
 
-            head_id_sorted_tokens = sorted(sent_tokens, key=attrgetter("head_id"))
-            token_dict = {token.id: token for token in sent_tokens}
 
-            # syn_vivo = Vivo()
-            relations = []
-            for token in head_id_sorted_tokens:
-                # 0 связан с корнем древа
-                if token.head_id == 0:
-                    continue
-
-                # смещение на 1 так как 0 - это корень синтаксического древа
-                token1 = token
-                text1 = SentenceToken.find_normal_token_text(sentence_tokens[token1.id - 1], normal_tokens)
-                token2 = token_dict[token.head_id]
-                text2 = SentenceToken.find_normal_token_text(sentence_tokens[token2.id - 1], normal_tokens)
-                if all([Token.define_type(text1) == "word", Token.define_type(text2) == "word",
-                        token1.id != token2.id]):
-                    relations.append(Relation(text1, text2, rating=1))
-            syn_vivo = Vivo(relations=relations)
-            syn_vivo.normal_relations()
-            return syn_vivo
-
-        sentence_tokens = get_sentence_tokens(sent.tokens, sent.text)
-        word_list = Sentence.get_normal_words(sentence_tokens, sentence_text=sent.text)
-        words = SentenceWord.get_word_dict_from_word_list(word_list)
-        normal_tokens = Sentence.get_normal_tokens(sentence_tokens, word_list, sentence_text=sent.text)
-        syn_vivo = get_syntax_vivo(sent_tokens=sent.tokens, sentence_tokens=sentence_tokens, normal_tokens=normal_tokens)
-
-        return Sentence(sent.text, sentence_tokens, normal_tokens, word_list, words, syn_vivo, number, sentence_start)
-
-    # ------------------------------------------------------------------------------------------------------------------
+    pass
