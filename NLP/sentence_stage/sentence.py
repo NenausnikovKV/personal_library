@@ -282,5 +282,4 @@ if __name__ == "__main__":
     proximity = sentence1.compare(sentence2)
 
     а = 89
-    pass
     # sentence1.remove_word(".")

@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from natasha import NewsEmbedding, Segmenter, NewsMorphTagger, NewsSyntaxParser
 from yargy.tokenizer import MorphTokenizer
-from NLP.external_analizer.morph_dictionaries import MorphDictionary
+
 from NLP.text_stage.text import Text
 from NLP.processing_plain_text import preprocessing
 from file_processing.file_processing import get_general_address, get_anthology_elements
@@ -54,12 +54,6 @@ class Agreement(Text):
 
 
 if __name__ == "__main__":
-    SynAnaliser = namedtuple("SynAnaliser", ["segmenter", "morph_tagger", "syntax_parser"])
-    tokenizer = MorphTokenizer()
-    morph = MorphDictionary()
-    ebd = NewsEmbedding()
-    syntax_analizer = SynAnaliser(segmenter=Segmenter(), morph_tagger = NewsMorphTagger(ebd),
-                                         syntax_parser = NewsSyntaxParser(ebd) )
 
 
     # text = "фамилия, имя"
@@ -74,7 +68,7 @@ if __name__ == "__main__":
            "Стороны; номер телефона, факса, адрес электронной почты приглашающей стороны; биометрические данные: " \
            "Фотография, отпечатки пальцев."
 
-    text_object =  Text.get_text_object_from_text(text, syn_analizer=syntax_analizer, morph=morph)
+    text_object =  Text.get_text_object_from_text(text)
     agreement = Agreement(text_object)
     agreement.replace_elements()
     a=9
