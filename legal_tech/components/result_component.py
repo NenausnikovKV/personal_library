@@ -292,10 +292,6 @@ class ResultComponent(Component):
         max_relevance_excert =  max((excert for excert in self.excerts), key=attrgetter("relevance"))
         return max_relevance_excert
 
-
-
-
-
     def add_excerts(self, relevant_excert, relevant_component_vivo):
         if not hasattr(relevant_excert, "component_vivo"):
             relevant_excert = RelevantExcert(relevant_excert, relevant_component_vivo, relevant_excert.max_relevance)
