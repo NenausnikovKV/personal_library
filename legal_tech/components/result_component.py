@@ -6,8 +6,7 @@ from operator import attrgetter
 from legal_tech.components.component import Component
 from legal_tech.excerts.component_sentence import ComponentSentence
 from legal_tech.excerts.relevant_excert import RelevantExcert
-from source.structural_sample.structural_sample import StructuralList
-
+from legal_tech.structural_sample.structural_sample import StructuralList
 
 
 class ResultComponent(Component):
@@ -278,7 +277,7 @@ class ResultComponent(Component):
         return result_components
 
     @classmethod
-    def max_max_result_component(cls, text_components):  # tuple, tuple
+    def get_max_result_component(cls, text_components):  # tuple, tuple
         """
         Берем максимум для каждого элемента
         """

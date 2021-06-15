@@ -1,5 +1,4 @@
-
-import natasha
+import natasha as natasha
 
 from NLP.external_analizer.nlp_analizer import NLPAnalyzer
 from NLP.external_analizer.sentence_analizer import natasha_sent_adapter
@@ -66,7 +65,7 @@ class NatashaSent:
         sents = NLPAnalyzer.divide_text_to_natasha_sents(text)
         sentences = list()
         for num, sent in enumerate(sents):
-            sentence = natasha_sent_adapter.get_sentence_from_natasha_sent(sent, sent.start, num)
+            sentence = natasha_sent_adapter.get_sentence_from_natasha_sent(sent, num, sent.start)
             sentences.append(sentence)
         return sentences
 

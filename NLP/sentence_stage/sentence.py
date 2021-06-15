@@ -2,13 +2,13 @@
 
 import copy
 
-from NLP.external_analizer.sentence_analizer.natasha_sent import NatashaSent
+
 from NLP.token_stage.word import SentenceWord
 from NLP.token_stage.personal_token import SentenceToken, Token
 from graph_representation.vivo.relation import Relation
 from graph_representation.vivo.vivo import Vivo
 
-
+# todo переписать в 2 класса Sentence and TextSentence
 class Sentence:
 
     def __init__(self, sen_text, tokens, normal_tokens, word_list, sen_words, syn_vivo, num=-1, start=-1):
@@ -27,8 +27,9 @@ class Sentence:
         self.vivo = syn_vivo
 
     @classmethod
-    def initial_from_sentence_excerpt(cls, sentence_text, sentence_num=-1, sentence_start=-1):
-        sentence = NatashaSent.get_sentence_from_sentence_text(sentence_text, sentence_num, sentence_start)
+    def initial_from_text_excerpt(cls, text_excerpt, sentence_num=-1, sentence_start=-1):
+        from NLP.external_analizer.sentence_analizer.natasha_sent import NatashaSent
+        sentence = NatashaSent.get_sentence_from_sentence_text(text_excerpt, sentence_num, sentence_start)
         return sentence
 
 
@@ -51,6 +52,9 @@ class Sentence:
                 result.words[key].rating += other.words[key].rating
 
         result.vivo = result.vivo + other.vivo
+
+        # todo переписать в 2 класса Sentence and TextSentence
+        # теперь эти параметры бессмысленны
         result.num = None
         result.start = None
         result.stop = None
@@ -64,7 +68,7 @@ class Sentence:
         if self.text.find(other_text) < 0:
             return None
         new_text = self.text.replace(other_text, "")
-        return Sentence.initial_from_sentence_excerpt(new_text)
+        return Sentence.initial_from_text_excerpt(new_text)
 
     def __str__(self):
         return self.text
@@ -264,10 +268,17 @@ class Sentence:
         return general_rating
 
     def compare(self, other):
-        if any([self.vivo is None, other.vivo is None]):
-            return self.word_compare(other)
-        else:
+        
+        try:
             return self.vivo.sum_compare(other.vivo)
+        except Exception:
+            return self.word_compare(other)
+            
+        #     
+        # if any([self.vivo is None, other.vivo is None]):
+        #     return self.word_compare(other)
+        # else:
+        #     return self.vivo.sum_compare(other.vivo)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -277,8 +288,8 @@ if __name__ == "__main__":
     text1 = "я люблю есть сыр"
     text2 = "я люблю сыр с плесенью"
 
-    sentence1 = Sentence.initial_from_sentence_excerpt(text1)
-    sentence2 = Sentence.initial_from_sentence_excerpt(text2)
+    sentence1 = Sentence.initial_from_text_excerpt(text1)
+    sentence2 = Sentence.initial_from_text_excerpt(text2)
     proximity = sentence1.compare(sentence2)
 
     а = 89

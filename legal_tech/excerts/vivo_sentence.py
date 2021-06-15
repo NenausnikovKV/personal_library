@@ -1,9 +1,8 @@
 import copy
-from clustering.cluster.element.cluster_element import ClusterElement
 from graph_representation.vivo.vivo import Vivo
 
 
-class VivoSentence(ClusterElement):
+class VivoSentence():
     """
 
     Предложение и его графическое представление

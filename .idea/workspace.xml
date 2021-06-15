@@ -4,8 +4,12 @@
     <list default="true" id="00b3e4e8-91ee-47c3-8e31-103d8e1558f1" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NLP/external_analizer/nlp_analizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/NLP/external_analizer/nlp_analizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NLP/external_analizer/sentence_analizer/natasha_sent.py" beforeDir="false" afterPath="$PROJECT_DIR$/NLP/external_analizer/sentence_analizer/natasha_sent.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NLP/sentence_stage/sentence.py" beforeDir="false" afterPath="$PROJECT_DIR$/NLP/sentence_stage/sentence.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NLP/text_stage/text.py" beforeDir="false" afterPath="$PROJECT_DIR$/NLP/text_stage/text.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/legal_tech/agreement.py" beforeDir="false" afterPath="$PROJECT_DIR$/legal_tech/agreement.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/legal_tech/divide_sentence_parts.py" beforeDir="false" afterPath="$PROJECT_DIR$/legal_tech/divide_sentence_parts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/legal_tech/read_test_list.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,6 +36,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../test_python" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -138,6 +143,13 @@
       <updated>1622024663520</updated>
       <workItem from="1622024664941" duration="13346000" />
       <workItem from="1622109596761" duration="14625000" />
+      <workItem from="1622191180275" duration="1224000" />
+      <workItem from="1622455778351" duration="1186000" />
+      <workItem from="1622534959189" duration="1201000" />
+      <workItem from="1622625132848" duration="591000" />
+      <workItem from="1622709187969" duration="1615000" />
+      <workItem from="1622798609921" duration="1190000" />
+      <workItem from="1623053246104" duration="594000" />
     </task>
     <servers />
   </component>
@@ -181,6 +193,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1877" height="275" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1622129921347" />
+    <state x="463" y="165" key="SettingsEditor" timestamp="1622207816702">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="463" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1622207816702" />
     <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1622111252866">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -191,7 +207,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/NLP/text_stage/text.py</url>
-          <line>112</line>
+          <line>113</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>

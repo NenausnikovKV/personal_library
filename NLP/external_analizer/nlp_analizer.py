@@ -9,8 +9,8 @@ class NLPAnalyzer():
 
     # создаем классы для анализа текста предложения для всего проекта
     segmenter = natasha.Segmenter()
-    # morph_dict = PymorphyMorphDictionary()
-    morph_dict = MaruMorphDictionary()
+    morph_dict = PymorphyMorphDictionary()
+    # morph_dict = MaruMorphDictionary()
     syntax_analizer = SyntaxAnalizer()
 
 

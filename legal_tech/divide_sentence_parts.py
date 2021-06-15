@@ -344,10 +344,10 @@ def divide_sentence(sentence_component_relevance, result_components):
 
 
     # result_component_sentences.append(
-    #     ComponentAndSentence(sentence=origin_sentence, components=result_component_list))
+    #     ComponentAndSentence(sentence=origin_sentence, components_of_texts=result_component_list))
     #     result_component = ResultComponent(win_suspect.component.name, win_suspect.component.vivos,
     #                                        win_suspect.component.necessity, [win_suspect.feature])
-    #     result_component_sentences.append(ComponentAndSentence(sentence=origin_sentence, components=[result_component]))
+    #     result_component_sentences.append(ComponentAndSentence(sentence=origin_sentence, components_of_texts=[result_component]))
     #
     # return result_component_sentences
     #
