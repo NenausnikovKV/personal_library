@@ -281,11 +281,11 @@ class ResultComponent(Component):
         """
         Берем максимум для каждого элемента
         """
-        result_components = []
-        for text_component in text_components.values():
+        result_components = dict()
+        for component_name, text_component in text_components.items():
             max_relevance_excert = text_component.get_max_relevant_excert()
             result_component = cls(name=text_component.name, vivo=text_component.vivo, excerts= [max_relevance_excert] )
-            result_components.append(result_component)
+            result_components[component_name] = result_component
         return result_components
 
     def _get_max_relevant_excert(self):

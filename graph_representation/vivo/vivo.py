@@ -23,8 +23,11 @@ class Vivo:
             self.nodes = nodes
             relations = self._get_relations_from_nodes()
 
+
+
         self.nodes = dict([hash(node), node] for node in nodes)
         self.relations = dict([hash(relation.text), relation] for relation in relations)
+        self.normal_relations()
 
     def __add__(self, other):
         result = copy.deepcopy(self)

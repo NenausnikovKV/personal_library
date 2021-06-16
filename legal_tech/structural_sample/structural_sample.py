@@ -1,14 +1,14 @@
 import json
 import os
-from operator import itemgetter
 
 from file_processing.file_processing import get_general_address
-from source.test_model.structural_sample.gears.borders import Borders
-from source.test_model.structural_sample.gears.order_component import OrderedComponent
+from legal_tech.structural_sample.gears.borders import Borders
+from legal_tech.structural_sample.gears.order_component import OrderedComponent
 
 """
 Не знаю что это, но было бы неплохо просмотреть и, при необходимости вписать в обзую структуру
 """
+
 
 def read_config_borders():
     borders = {}
@@ -25,14 +25,11 @@ def read_config_borders():
 
 
 class StructuralList:
-
     # для каждого компонента представлены глобальные границы слева и справа (dict)
     borders = read_config_borders()
 
     def __init__(self, ):
         self.ordered_components = []
-
-
 
     def add_element(self, category, num):
         if not self.check_one_component_possibility_order(category=category, category_num=num):
@@ -47,8 +44,6 @@ class StructuralList:
         self.ordered_components.append(new_ordered_component)
         return True
 
-
-
     def check_one_component_possibility_order(self, category, category_num):
 
         #  собираем порядок в текущих ужу записанных элементах
@@ -56,8 +51,10 @@ class StructuralList:
         exist_right = []
         for ordered_component in self.ordered_components:
             for num in ordered_component.nums:
-                if num < category_num: exist_left.append(ordered_component.name)
-                elif num < category_num: exist_right.append(ordered_component.name)
+                if num < category_num:
+                    exist_left.append(ordered_component.name)
+                elif num < category_num:
+                    exist_right.append(ordered_component.name)
                 elif num == category_num:
                     exist_left.append(ordered_component.name)
                     exist_right.append(ordered_component.name)
@@ -70,7 +67,6 @@ class StructuralList:
             if all([sample_right_category not in exist_right, sample_right_category in exist_left]):
                 return False
         return True
-
 
     @staticmethod
     def check_all_component_possibility_order(categories, sentence_nums):
@@ -87,16 +83,16 @@ class StructuralList:
         """
         Проверяем моржет ли быть category 1 раньше category 2
         """
-        if any ([category1 in cls.borders[category2].right, category2 in cls.borders[category1].right]):
-             return False
+        if any([category1 in cls.borders[category2].right, category2 in cls.borders[category1].right]):
+            return False
         return True
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     structural_components = StructuralList()
     categories = ["name", "subject", "will", "purpose", "operator", "common_data", "data_action", "processing_method",
-                "time", "recall", "assign"]
+                  "time", "recall", "assign"]
     for num, category in enumerate(categories):
         if structural_components.check_one_component_possibility_order(category=category, category_num=num):
-           structural_components.add_element(category, num)
-    a=90
-
+            structural_components.add_element(category, num)
+    a = 90

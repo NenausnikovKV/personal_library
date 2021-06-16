@@ -22,11 +22,14 @@ class Component:
     def read_components_from_directory(cls, directory):
         """Получение элементов согласия"""
         directory = directory
-        json_file_names = filter(lambda x: x.endswith('.json'), os.listdir(directory))
+        json_file_names = os.listdir(directory)
         components = {}
         for json_file_name in json_file_names:
             json_file_full_address = directory + "/" + json_file_name
-            cls.read_component_from_json(json_file_name, json_file_full_address)
+            # отбрасываем тип файла
+            name = json_file_name.split(".")[0]
+            component = cls.read_component_from_json(name, json_file_full_address)
+            components[component.name] = component
         return components
 
     @classmethod
