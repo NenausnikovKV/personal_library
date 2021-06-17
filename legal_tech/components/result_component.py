@@ -11,18 +11,13 @@ from legal_tech.structural_sample.structural_sample import StructuralList
 
 class ResultComponent(Rule):
 
-    def __init__(self, name, vivo, excerts, necessity=True):
+    def __init__(self, name, vivo, rated_sentences, necessity=True):
         Rule.__init__(self, name, vivo, necessity)
         # component_sentences = list(component_sentences)
         self.excerts = {}
-        for excert in excerts:
-            relevance = -1
-            if hasattr(excert, "max_relevance"):
-                relevance = excert.max_relevance
-            elif hasattr(excert, "relevance"):
-                relevance = excert.relevance
-            relevant_excert = ExcerptRelevance(excert, vivo, relevance)
-            self.excerts[hash(relevant_excert.sentence.text)] = relevant_excert
+        
+        for excert in rated_sentences:
+            self.add_excerpt(excert, vivo)
 
     def __str__(self):
         return self.name + " - " + self.excerts.__len__()
@@ -79,7 +74,7 @@ class ResultComponent(Rule):
                                                    )
                 result_components[max_rel_component_name] = result_component
             else:
-                result_components[max_rel_component_name].add_excerts(component_excert, component_vivo)
+                result_components[max_rel_component_name].add_excerpt(component_excert, component_vivo)
 
             # перерасчет виво для компонента и предложения
             # из каждого предложенрия и компонента вырезается та часть. которая присутствует в другом
@@ -157,7 +152,7 @@ class ResultComponent(Rule):
                                                    )
                 estimated_components[max_rel_component_name] = result_component
             else:
-                estimated_components[max_rel_component_name].add_excerts(component_excert, component_vivo)
+                estimated_components[max_rel_component_name].add_excerpt(component_excert, component_vivo)
 
             # перерасчет виво для компонента и предложения
             # из каждого предложенрия и компонента вырезается та часть. которая присутствует в другом
@@ -242,7 +237,7 @@ class ResultComponent(Rule):
                                        necessity=True, excerts=[component_sentence])
                 result_components[max_rel_component_name] = result_component
             else:
-                result_components[max_rel_component_name].add_excerts(component_sentence, component_vivo)
+                result_components[max_rel_component_name].add_excerpt(component_sentence, component_vivo)
 
             # пополняем структурные элементы
             # structural_components.add_element(max_rel_component_name, winning_sentence.sentence.num)
@@ -277,18 +272,17 @@ class ResultComponent(Rule):
         return result_components
 
     @classmethod
-    def get_max_result_components(cls, text_components):  # tuple, tuple
+    def get_max_relevant_components(cls, relevant_to_rule_sentences):  # tuple, tuple
         """
-        Берем максимум для каждого элемента
+        Берем предложение с максимальным рейтингом для каждого праивла
         """
         result_components = dict()
-        for component_name, text_component in text_components.items():
-            max_relevance_sentence = text_component.get_max_sentence_relevance()
-            try:
-                result_component
-            except:
-                result_component = cls(name=text_component.name, vivo=text_component.vivo, excerts= [max_relevance_sentence] )
-            result_components[component_name] = result_component
+        for rule_name, relevant_to_rule_sentences in relevant_to_rule_sentences.items():
+            max_relevance_sentence = relevant_to_rule_sentences.get_max_relevant_sentence()
+            result_component = cls(name=rule_name,
+                                   vivo=relevant_to_rule_sentences.rule_vivo,
+                                   rated_sentences=[max_relevance_sentence])
+            result_components[rule_name] = result_component
         return result_components
 
     def _get_max_relevant_excert(self):
@@ -296,12 +290,10 @@ class ResultComponent(Rule):
         return max_relevance_excert
 
     # ------------------------------------------------------------------------------------------------------------------
-    def add_excerts(self, relevant_excert, relevant_component_vivo):
-        if not hasattr(relevant_excert, "component_vivo"):
-            relevant_excert = ExcerptRelevance(relevant_excert, relevant_component_vivo, relevant_excert.max_relevance)
-        if not self.excerts.get(hash(relevant_excert.sentence.text)):
-            self.excerts[hash(relevant_excert.sentence.text)] = relevant_excert
-            self.vivo = self.vivo + relevant_component_vivo
+    def add_excerpt(self, relevant_sentence, current_rule_vivo=None):
+        if not hasattr(relevant_sentence, "component_vivo"):
+            relevant_sentence = ExcerptRelevance(relevant_sentence, current_rule_vivo, relevant_sentence.relevance)
+        self.excerts[hash(relevant_sentence.sentence.text)] = relevant_sentence
 
     def delete_excert(self, sentence):
         for excert in self.excerts.values():
@@ -423,7 +415,7 @@ class ResultComponent(Rule):
             sentence_vivo = new_sentence.vivo
             result_sentences = {hash(new_sentence.text): new_sentence}
             other_components[component_name] = ResultComponent(component_name, sentence_vivo, necessity=True,
-                                                               excerts=result_sentences)
+                                                               rated_sentences=result_sentences)
         return other_components
 
 

@@ -11,25 +11,25 @@ class RelevantToRuleSentences(Rule):
        добавляется максимальный рейтинг отрывка и его хэш
     """
 
-    def __init__(self, rule_name, rated_sentences):
+    def __init__(self, rule_name, rule_vivo, rated_sentences):
         self.rule_name = rule_name
+        self.rule_vivo = rule_vivo
         self.relevant_sentences = rated_sentences
 
-        try:
-            self.max_sentence_relevance = self.get_max_sentence_relevance()
-            # self.max_relevant_sentence_hash = hash(self.max_sentence_relevance.sentence.text)
-            self.max_relevance = self.relevant_sentences[self.max_relevant_sentence_hash].relevance
-        except KeyError:
-            self.max_relevance = -1
+        # try:
+        #     max_relevant_sentence = self.get_max_relevant_sentence()
+        #     self.max_relevance = max_relevant_sentence.relevance
+        # except KeyError:
+        #     self.max_relevance = -1
 
 
     @classmethod
-    def get_from_text_object(cls, rule_component, text_object):
-        sample_vivo = copy.deepcopy(rule_component.vivo)
+    def get_from_text_object(cls, rule, text_object):
+        sample_vivo = copy.deepcopy(rule.vivo)
         rated_sentences = {}
         for sentence in text_object.sentences.values():
             rated_sentences[hash(sentence.text)] = RatedSentence(sentence, sample_vivo)
-        return cls(rule_component.name, rated_sentences)
+        return cls(rule.name, rule.vivo, rated_sentences)
 
-    def get_max_sentence_relevance(self):
+    def get_max_relevant_sentence(self):
         return max(self.relevant_sentences.values(), key=attrgetter('relevance'))
