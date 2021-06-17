@@ -1,7 +1,7 @@
 from legal_tech.excerts.vivo_sentence import VivoSentence
 
 
-class RelevantExcert(VivoSentence):
+class ExcerptRelevance(VivoSentence):
 
     def __init__(self, vivo_sentence, component_vivo, relevance):
         super().__init__(vivo_sentence.sentence, vivo_sentence.vivo)

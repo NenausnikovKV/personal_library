@@ -6,7 +6,7 @@ from NLP.token_stage.word import SentenceWord
 from legal_tech.components.result_component import ResultComponent
 from NLP.sentence_stage.sentence import Sentence
 from graph_representation.vivo.vivo import Vivo
-from legal_tech.excerts.relevant_excert import RelevantExcert
+from legal_tech.excerts.relevant_excert import ExcerptRelevance
 from legal_tech.excerts.vivo_sentence import VivoSentence
 
 
@@ -230,7 +230,7 @@ def get_sentences_from_word_list(origin_sentence, word_list_suspect_couple):
     for i in range(sentence_couple.__len__()):
         sentence = sentence_couple[i]
         vivo_sentence = VivoSentence.init(sentence)
-        relevant_sentence = RelevantExcert(vivo_sentence, word_list_suspect_couple[i].component.vivo, word_list_suspect_couple[i].rating)
+        relevant_sentence = ExcerptRelevance(vivo_sentence, word_list_suspect_couple[i].component.vivo, word_list_suspect_couple[i].rating)
         component_and_sentence = ComponentAndSentence(component=word_list_suspect_couple[i].component,
                                                  relevant_sentence=relevant_sentence)
         component_and_sentence_couple.append(component_and_sentence)

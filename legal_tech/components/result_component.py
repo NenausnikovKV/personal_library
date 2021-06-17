@@ -3,16 +3,16 @@ from collections import namedtuple
 from operator import attrgetter
 
 
-from legal_tech.components.component import Component
+from legal_tech.components.rule import Rule
 from legal_tech.excerts.component_sentence import ComponentSentence
-from legal_tech.excerts.relevant_excert import RelevantExcert
+from legal_tech.excerts.relevant_excert import ExcerptRelevance
 from legal_tech.structural_sample.structural_sample import StructuralList
 
 
-class ResultComponent(Component):
+class ResultComponent(Rule):
 
     def __init__(self, name, vivo, excerts, necessity=True):
-        Component.__init__(self, name, vivo, necessity)
+        Rule.__init__(self, name, vivo, necessity)
         # component_sentences = list(component_sentences)
         self.excerts = {}
         for excert in excerts:
@@ -21,7 +21,7 @@ class ResultComponent(Component):
                 relevance = excert.max_relevance
             elif hasattr(excert, "relevance"):
                 relevance = excert.relevance
-            relevant_excert = RelevantExcert(excert, vivo, relevance)
+            relevant_excert = ExcerptRelevance(excert, vivo, relevance)
             self.excerts[hash(relevant_excert.sentence.text)] = relevant_excert
 
     def __str__(self):
@@ -284,7 +284,10 @@ class ResultComponent(Component):
         result_components = dict()
         for component_name, text_component in text_components.items():
             max_relevance_sentence = text_component.get_max_sentence_relevance()
-            result_component = cls(name=text_component.name, vivo=text_component.vivo, excerts= [max_relevance_sentence] )
+            try:
+                result_component
+            except:
+                result_component = cls(name=text_component.name, vivo=text_component.vivo, excerts= [max_relevance_sentence] )
             result_components[component_name] = result_component
         return result_components
 
@@ -295,7 +298,7 @@ class ResultComponent(Component):
     # ------------------------------------------------------------------------------------------------------------------
     def add_excerts(self, relevant_excert, relevant_component_vivo):
         if not hasattr(relevant_excert, "component_vivo"):
-            relevant_excert = RelevantExcert(relevant_excert, relevant_component_vivo, relevant_excert.max_relevance)
+            relevant_excert = ExcerptRelevance(relevant_excert, relevant_component_vivo, relevant_excert.max_relevance)
         if not self.excerts.get(hash(relevant_excert.sentence.text)):
             self.excerts[hash(relevant_excert.sentence.text)] = relevant_excert
             self.vivo = self.vivo + relevant_component_vivo

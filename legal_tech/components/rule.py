@@ -3,7 +3,7 @@ import os
 from graph_representation.vivo.vivo import Vivo
 
 
-class Component:
+class Rule:
 
     """
         Наименование и графовое описание компонента согласия
