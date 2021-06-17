@@ -16,7 +16,7 @@ class TextComponent(Component):
 
         self.sentence_relevances = dict(sentence_collations)
 
-        self.max_sentence_relevance = self._get_max_sentence_relevance()
+        self.max_sentence_relevance = self.get_max_sentence_relevance()
         self.max_relevant_sentence_hash = hash(self.max_sentence_relevance.sentence.text)
 
         try:
@@ -39,7 +39,7 @@ class TextComponent(Component):
             rated_sentences[hash(sentence.text)] = RatedSentence(sentence, sample_vivo)
         return cls(rule_component.name, sample_vivo, rule_component.necessity, rated_sentences)
 
-    def _get_max_sentence_relevance(self):
+    def get_max_sentence_relevance(self):
         return max(self.sentence_relevances.values(), key=attrgetter('relevance'))
 
     #  outdated
@@ -52,6 +52,4 @@ class TextComponent(Component):
                 max_relevant_sentence = self.sentence_relevances[sentence_hash]
         return max_relevant_sentence
 
-    def get_max_relevant_excert(self):
-        max_relevance_excert =  max((excert for excert in self.sentence_relevances.values()), key=attrgetter("relevance"))
-        return max_relevance_excert
+

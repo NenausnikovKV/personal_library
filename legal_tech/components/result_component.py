@@ -277,14 +277,14 @@ class ResultComponent(Component):
         return result_components
 
     @classmethod
-    def get_max_result_component(cls, text_components):  # tuple, tuple
+    def get_max_result_components(cls, text_components):  # tuple, tuple
         """
         Берем максимум для каждого элемента
         """
         result_components = dict()
         for component_name, text_component in text_components.items():
-            max_relevance_excert = text_component.get_max_relevant_excert()
-            result_component = cls(name=text_component.name, vivo=text_component.vivo, excerts= [max_relevance_excert] )
+            max_relevance_sentence = text_component.get_max_sentence_relevance()
+            result_component = cls(name=text_component.name, vivo=text_component.vivo, excerts= [max_relevance_sentence] )
             result_components[component_name] = result_component
         return result_components
 
