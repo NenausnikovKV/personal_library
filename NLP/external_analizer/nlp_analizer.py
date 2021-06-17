@@ -1,6 +1,5 @@
 import natasha
 
-from NLP.external_analizer.morph_dictionaries.maru_morph_parsing import MaruMorphDictionary
 from NLP.external_analizer.morph_dictionaries.pymorphy_morph_dictionary import PymorphyMorphDictionary
 from NLP.external_analizer.syntax_analizer.syntax_analyzer import SyntaxAnalizer
 
@@ -15,10 +14,12 @@ class NLPAnalyzer():
 
 
     @staticmethod
-    def change_morph_dictionary(new_morph_dict = PymorphyMorphDictionary()):
-        # new_morph_dict = MaruMorphDictionary()
+    def change_morph_dictionary_to_maru():
+        from NLP.external_analizer.morph_dictionaries.maru_morph_parsing import MaruMorphDictionary
         global morph_dict
-        morph_dict = new_morph_dict
+        morph_dict = MaruMorphDictionary()
+
+
 
     @classmethod
     def divide_text_to_natasha_sents(cls, text):

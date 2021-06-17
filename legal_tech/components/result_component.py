@@ -292,6 +292,7 @@ class ResultComponent(Component):
         max_relevance_excert =  max((excert for excert in self.excerts), key=attrgetter("relevance"))
         return max_relevance_excert
 
+    # ------------------------------------------------------------------------------------------------------------------
     def add_excerts(self, relevant_excert, relevant_component_vivo):
         if not hasattr(relevant_excert, "component_vivo"):
             relevant_excert = RelevantExcert(relevant_excert, relevant_component_vivo, relevant_excert.max_relevance)
@@ -358,6 +359,33 @@ class ResultComponent(Component):
         #  записываем полученные предложения в рассматриваемый компонент
         self.excerts = {hash(sentence.sentence.text):sentence for sentence in new_sentences}
 
+    @staticmethod
+    def find_sentence_repeat(result_components, all_sentences):
+        """
+        поиск повторов предложений среди результирующих компонентов
+        """
+        result_components = dict([component.name, component] for component in result_components)
+        probably_repeat_sentence_components = {}
+        for component in result_components.values():
+            for component_sentences in component.excerts.values():
+                if not probably_repeat_sentence_components.get(hash(component_sentences.sentence.text)):
+                    probably_repeat_sentence_components[hash(component_sentences.sentence.text)] = [component.name]
+                else:
+                    probably_repeat_sentence_components[hash(component_sentences.sentence.text)].append(component.name)
+
+        repeat_component_sentence = {}
+        for sentence_hash in probably_repeat_sentence_components:
+            if probably_repeat_sentence_components[sentence_hash].__len__() > 1:
+                components = {}
+                for component in probably_repeat_sentence_components[sentence_hash]:
+                    components[component] = (result_components[component])
+                sentence = all_sentences[sentence_hash]
+                if len(sentence.sentence.word_list) > 2:
+                    repeat_component_sentence[sentence_hash] = ComponentSentence(all_sentences[sentence_hash], components.values())
+                else:
+                    a=9
+        return repeat_component_sentence
+    # ------------------------------------------------------------------------------------------------------------------
 
     @staticmethod
     def define_other_result_component(existence_components, sample_components, component_sentences):
@@ -395,31 +423,5 @@ class ResultComponent(Component):
                                                                excerts=result_sentences)
         return other_components
 
-    @staticmethod
-    def find_sentence_repeat(result_components, all_sentences):
-        """
-        поиск повторов предложений среди результирующих компонентов
-        """
-        result_components = dict([component.name, component] for component in result_components)
-        probably_repeat_sentence_components = {}
-        for component in result_components.values():
-            for component_sentences in component.excerts.values():
-                if not probably_repeat_sentence_components.get(hash(component_sentences.sentence.text)):
-                    probably_repeat_sentence_components[hash(component_sentences.sentence.text)] = [component.name]
-                else:
-                    probably_repeat_sentence_components[hash(component_sentences.sentence.text)].append(component.name)
-
-        repeat_component_sentence = {}
-        for sentence_hash in probably_repeat_sentence_components:
-            if probably_repeat_sentence_components[sentence_hash].__len__() > 1:
-                components = {}
-                for component in probably_repeat_sentence_components[sentence_hash]:
-                    components[component] = (result_components[component])
-                sentence = all_sentences[sentence_hash]
-                if len(sentence.sentence.word_list) > 2:
-                    repeat_component_sentence[sentence_hash] = ComponentSentence(all_sentences[sentence_hash], components.values())
-                else:
-                    a=9
-        return repeat_component_sentence
 
 
