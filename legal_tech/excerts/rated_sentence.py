@@ -4,14 +4,19 @@ from legal_tech.excerts.vivo_sentence import VivoSentence
 class RatedSentence(VivoSentence):
     """ Предложение, его виво-представление и их рейтинги """
 
-    def __init__(self, sentence, rule_vivo):
+    def __init__(self, sentence, rule_vivo, relevance=None):
         
         # получение виво в случае работы с полносвязной растопыркой
         # sentence_vivo = get_sentence_vivo(sentence, segmenter, morph_tagger, syntax_parser)
-        # vivos = VivoSentence.build_sentence_vivo(sentence)
-
         VivoSentence.__init__(self, sentence=sentence, vivo=sentence.vivo)
-        self.relevance = self.get_sentence_relevance_to_rule(rule_vivo)
+
+        if relevance != None:
+            self.relevance = relevance
+        else:
+            self.relevance = self.get_sentence_relevance_to_rule(rule_vivo)
+        # каждое предложение релевантно определенному виво
+        # (одна из моделей предполагает динамическое изменение этого виво),
+        self.rule_vivo = rule_vivo
 
     def __str__(self):
         return "{0} - {1}".format(str(self.relevance), self.sentence.text)

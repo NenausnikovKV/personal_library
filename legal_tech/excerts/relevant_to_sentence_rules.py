@@ -1,19 +1,18 @@
 from legal_tech.excerts.vivo_sentence import VivoSentence
 
 
-class ComponentSentence(VivoSentence):
+class RelevantToSentenceRules(VivoSentence):
     # предложение, виво и словрь подходящих правил с их релевантностью
-    def __init__(self, vivo_sentence, text_components):
+    def __init__(self, vivo_sentence, *text_components):
 
         VivoSentence.__init__(self, vivo_sentence.sentence, vivo_sentence.vivo)
 
-        self.component_relevance = {}
-        for component in text_components:
-            self.component_relevance[component.name] = component.excerts[hash(self.sentence.text)].relevance
-
+        self.component_relevance = dict()
         self.max_relevance_element_name = ""
         self.max_relevance = -1
-        self.define_max_relevance()
+        for text_component in text_components:
+            self.add_component(text_component)
+
 
     def add_component(self, text_component):
         if not self.component_relevance.get(text_component.name):

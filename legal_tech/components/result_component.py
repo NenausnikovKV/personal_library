@@ -4,7 +4,8 @@ from operator import attrgetter
 
 
 from legal_tech.components.rule import Rule
-from legal_tech.excerts.component_sentence import ComponentSentence
+from legal_tech.excerts.relevant_to_sentence_rules import RelevantToSentenceRules
+from legal_tech.excerts.rated_sentence import RatedSentence
 from legal_tech.excerts.relevant_excert import ExcerptRelevance
 from legal_tech.structural_sample.structural_sample import StructuralList
 
@@ -16,8 +17,8 @@ class ResultComponent(Rule):
         # component_sentences = list(component_sentences)
         self.excerts = {}
         
-        for excert in rated_sentences:
-            self.add_excerpt(excert, vivo)
+        for rated_sentence in rated_sentences:
+            self.add_rated_sentence(rated_sentence, vivo)
 
     def __str__(self):
         return self.name + " - " + self.excerts.__len__()
@@ -26,17 +27,17 @@ class ResultComponent(Rule):
         return self.name
 
     @classmethod
-    def define_result_components(cls, component_sentences, text_components):  # tuple, tuple
+    def define_result_components(cls, component_sentences, relevant_to_rules_sentences):  # tuple, tuple
+
         """
         На основании рейтинга получение списка результирующих компонентов и принадлежщим им предложений
         ставится гипотеза что каждое предложение принадлежит какому либо компоненту
         все полетит в тартарары, если это будет не так
         """
-        text_components = {component.name: component for component in text_components}
 
         #  работаем с копиями, т.к. изменяется vivos предложений и компонентов в процессе сравнения
-        components = copy.deepcopy(text_components)
-        sentences = copy.deepcopy(list(component_sentences))
+        components = copy.deepcopy(relevant_to_rules_sentences)
+        sentences = copy.deepcopy(component_sentences)
 
         # свободные предложения - по ним определяется конец цикла, когда они заканчиваются
         free_sentences = set(component_sentence.sentence.text for component_sentence in copy.copy(sentences))
@@ -64,7 +65,7 @@ class ResultComponent(Rule):
             #     a=5
 
             #  Для записи берем оригинальные компоненты и предложения
-            component_vivo = copy.deepcopy(text_components[max_rel_component_name].vivo)
+            component_vivo = copy.deepcopy(relevant_to_rules_sentences[max_rel_component_name].vivo)
             component_excert = copy.deepcopy(component_sentence)
             if not result_components.get(max_rel_component_name):
                 result_component = cls(name=max_rel_component_name,
@@ -74,7 +75,7 @@ class ResultComponent(Rule):
                                                    )
                 result_components[max_rel_component_name] = result_component
             else:
-                result_components[max_rel_component_name].add_excerpt(component_excert, component_vivo)
+                result_components[max_rel_component_name].add_rated_sentence(component_excert, component_vivo)
 
             # перерасчет виво для компонента и предложения
             # из каждого предложенрия и компонента вырезается та часть. которая присутствует в другом
@@ -152,7 +153,7 @@ class ResultComponent(Rule):
                                                    )
                 estimated_components[max_rel_component_name] = result_component
             else:
-                estimated_components[max_rel_component_name].add_excerpt(component_excert, component_vivo)
+                estimated_components[max_rel_component_name].add_rated_sentence(component_excert, component_vivo)
 
             # перерасчет виво для компонента и предложения
             # из каждого предложенрия и компонента вырезается та часть. которая присутствует в другом
@@ -237,7 +238,7 @@ class ResultComponent(Rule):
                                        necessity=True, excerts=[component_sentence])
                 result_components[max_rel_component_name] = result_component
             else:
-                result_components[max_rel_component_name].add_excerpt(component_sentence, component_vivo)
+                result_components[max_rel_component_name].add_rated_sentence(component_sentence, component_vivo)
 
             # пополняем структурные элементы
             # structural_components.add_element(max_rel_component_name, winning_sentence.sentence.num)
@@ -290,10 +291,8 @@ class ResultComponent(Rule):
         return max_relevance_excert
 
     # ------------------------------------------------------------------------------------------------------------------
-    def add_excerpt(self, relevant_sentence, current_rule_vivo=None):
-        if not hasattr(relevant_sentence, "component_vivo"):
-            relevant_sentence = ExcerptRelevance(relevant_sentence, current_rule_vivo, relevant_sentence.relevance)
-        self.excerts[hash(relevant_sentence.sentence.text)] = relevant_sentence
+    def add_rated_sentence(self, rated_sentence, current_rule_vivo=None):
+        self.excerts[hash(rated_sentence.sentence.text)] = copy.deepcopy(rated_sentence)
 
     def delete_excert(self, sentence):
         for excert in self.excerts.values():
@@ -376,7 +375,7 @@ class ResultComponent(Rule):
                     components[component] = (result_components[component])
                 sentence = all_sentences[sentence_hash]
                 if len(sentence.sentence.word_list) > 2:
-                    repeat_component_sentence[sentence_hash] = ComponentSentence(all_sentences[sentence_hash], components.values())
+                    repeat_component_sentence[sentence_hash] = RelevantToSentenceRules(all_sentences[sentence_hash], components.values())
                 else:
                     a=9
         return repeat_component_sentence

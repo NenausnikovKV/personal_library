@@ -21,7 +21,13 @@ class RelevantToRuleSentences(Rule):
         #     self.max_relevance = max_relevant_sentence.relevance
         # except KeyError:
         #     self.max_relevance = -1
-
+    
+    @classmethod
+    def get_relevant_to_rule_sentences(cls, agreement, rules):
+        relevant_to_rule_sentences = dict()
+        for sample_component_name, rule in rules.items():
+            relevant_to_rule_sentences[sample_component_name] = cls.get_from_text_object(rule, agreement)
+        return relevant_to_rule_sentences
 
     @classmethod
     def get_from_text_object(cls, rule, text_object):
@@ -33,3 +39,5 @@ class RelevantToRuleSentences(Rule):
 
     def get_max_relevant_sentence(self):
         return max(self.relevant_sentences.values(), key=attrgetter('relevance'))
+
+    
