@@ -18,16 +18,18 @@ class Vivo:
             return
         elif nodes == None:
             self.relations = relations
-            nodes = self._get_nodes_from_relations()
+            self.nodes = self._get_nodes_from_relations()
         elif relations == None:
             self.nodes = nodes
-            relations = self._get_relations_from_nodes()
+            self.relations = self._get_relations_from_nodes()
+        else:
+            self.nodes = nodes
+            self.relations = relations
 
-
-
-        self.nodes = dict([hash(node), node] for node in nodes)
-        self.relations = dict([hash(relation.text), relation] for relation in relations)
         self.normal_relations()
+
+
+
 
     def __add__(self, other):
         result = copy.deepcopy(self)
@@ -197,7 +199,7 @@ class Vivo:
     def normal_relations(self):
         general_rating = 0
 
-        for key in self.relations:
+        for key in self.relations.keys():
             relation = self.relations[key]
             general_rating += relation.rating
         key_list = self.relations.keys()
@@ -404,7 +406,7 @@ class Vivo:
             rating = relation["rating"]
             text = Relation.get_relation_text(text1, text2)
             relations[hash(text)] = Relation(text, rating=rating)
-        return cls(tuple(nodes.values()), tuple(relations.values()))
+        return cls(nodes, relations)
 
 
 # Соответствие компонентов
@@ -418,14 +420,14 @@ class Vivo:
                 if node1 != node2:
                     text = Relation.get_relation_text(node1, node2)
                     relations.add(Relation(text, rating=1))
-        return list(relations)
+        return {hash(relation.text):relation for relation in relations}
 
     def _get_nodes_from_relations(self):
         nodes = set()
-        for relation in self.relations:
+        for relation in self.relations.values():
             nodes.add(relation.text1)
             nodes.add(relation.text2)
-        return list(nodes)
+        return {hash(node):node for node in nodes}
 
 # ----------------------------------------------------------------------------------------------------------------------
 

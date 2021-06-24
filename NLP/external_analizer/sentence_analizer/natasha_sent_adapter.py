@@ -41,6 +41,7 @@ def _get_syntax_vivo(sent_tokens, sentence_tokens, normal_tokens):
         if all([Token.define_type(text1) == "word", Token.define_type(text2) == "word",
                 token1.id != token2.id]):
             relations.append(Relation(text1, text2, rating=1))
+    relations = {hash(relation.text):relation for relation in relations}
     syn_vivo = Vivo(relations=relations)
     syn_vivo.normal_relations()
     return syn_vivo
