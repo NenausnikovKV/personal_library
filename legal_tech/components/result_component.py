@@ -2,13 +2,13 @@ import copy
 from collections import namedtuple, defaultdict
 from operator import attrgetter
 
-
+from legal_tech.components.relevant_to_rule_sentences import RelevantToRuleSentences
 from legal_tech.components.rule import Rule
 from legal_tech.excerts.rated_sentence import RatedSentence
 from legal_tech.excerts.relevant_to_sentence_rules import RelevantToSentenceRules
 from legal_tech.excerts.vivo_sentence import VivoSentence
 
-from legal_tech.structural_sample.structural_sample import StructuralList
+from legal_tech.structural_sample.structural_list import StructuralList
 
 
 class ResultComponent(Rule):
@@ -26,6 +26,15 @@ class ResultComponent(Rule):
 
     def __repr__(self):
         return self.name
+
+    def check_sentence(self, sentence_text):
+        return hash(sentence_text) in self.relevant_sentences
+
+    def find_sentence(self, sentence_text):
+        return self.relevant_sentences[hash(sentence_text)]
+
+    def get_max_relevant_sentence(self):
+        return max(self.relevant_sentences.values(), key=attrgetter('relevance'))
 
 
     @classmethod
@@ -333,17 +342,22 @@ class ResultComponent(Rule):
         return result_components
 
     @classmethod
-    def get_max_relevant_components(cls, relevant_to_rule_sentences):  # tuple, tuple
+    def get_max_relevant_components(cls, relevant_to_rules_sentences):  # tuple, tuple
         """
         Берем предложение с максимальным рейтингом для каждого праивла
         """
+
+
         result_components = dict()
-        for rule_name, relevant_to_rule_sentences in relevant_to_rule_sentences.items():
-            max_relevance_sentence = relevant_to_rule_sentences.get_max_relevant_sentence()
+        for rule_name, rule_sentences in relevant_to_rules_sentences.items():
+            max_relevance_sentence = rule_sentences.get_max_relevant_sentence()
+
             result_component = ResultComponent(name=rule_name,
-                                   vivo=relevant_to_rule_sentences.rule_vivo,
+                                   rule=rule_sentences.rule,
                                    rated_sentences=[max_relevance_sentence])
+
             result_components[rule_name] = result_component
+
         return result_components
 
     def _get_max_relevant_excert(self):

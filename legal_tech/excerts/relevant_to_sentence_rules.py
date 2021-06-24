@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from legal_tech.components.rated_rule import RatedRule
 from legal_tech.excerts.vivo_sentence import VivoSentence
 
@@ -36,3 +38,12 @@ class RelevantToSentenceRules(VivoSentence):
             if self.rated_rules[component_name].relevance >= self.max_relevance:
                 self.max_relevance = self.rated_rules[component_name].relevance
                 self.max_relevance_rule = self.rated_rules[component_name]
+
+    @classmethod
+    def get_from_components(self, components):
+        relevant_to_sentences_rules = defaultdict(list)
+        for name, component in components.items():
+            for sentence_hash, relevant_sentence in component.relevant_sentences.items():
+                rated_rule = RatedRule(rule=component.rule, relevance=relevant_sentence.relevance)
+                relevant_to_sentences_rules[sentence_hash].append(rated_rule)
+        return relevant_to_sentences_rules

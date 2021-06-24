@@ -59,12 +59,12 @@ class StructuralList:
         for sample_left_category in self.borders[category].left:
             if sample_left_category == "start":
                 continue
-            if all([sample_left_category not in exist_left]):
+            if all([sample_left_category in exist_right]):
                 return False
         for sample_right_category in self.borders[category].right:
             if sample_right_category == "end":
                 continue
-            if all([sample_right_category not in exist_right]):
+            if all([sample_right_category in exist_left]):
                 return False
         return True
 
@@ -77,33 +77,45 @@ class StructuralList:
             return False
         return True
 
+
     @staticmethod
     def check_all_component_possibility_order(categories, sentence_nums):
+        structural_list = StructuralList.get_structural_list(categories, sentence_nums)
+        return structural_list.check_structural_list()
+
+
+    @classmethod
+    def get_structural_list(cls, categories, sentence_nums):
         structural_list = StructuralList()
         for category, sentence_num in zip(categories, sentence_nums):
             if sentence_num < 0:
                 continue
             structural_list.add_element(category, sentence_num)
-        for category, sentence_num in zip(categories, sentence_nums):
-            if not structural_list.check_one_component_possibility_order(category=category, category_num=sentence_num):
-                return False
-        return True
+        return structural_list
 
-    # def check_all_component_possibility_order(self):
-    #     for category, sentence_num in self.ordered_categories:
-    #         if not self.check_one_component_possibility_order(category=category, category_num=sentence_num):
-    #             return False
-    #     return True
+
+    def check_structural_list(self):
+        for ordered_category in self.ordered_categories:
+            for num in ordered_category.nums:
+                if not self.check_one_component_possibility_order(category=ordered_category.name,
+                                                                  category_num=num):
+                    return False
+        return True
 
 if __name__ == "__main__":
     structural_components = StructuralList()
     categories = ["name", "subject", "will", "purpose", "operator", "common_data", "data_action", "processing_method",
                   "time", "recall", "assign"]
     sentence_nums = list(range(11))
-    StructuralList.check_all_component_possibility_order(categories, sentence_nums)
 
-    for num, category in enumerate(categories):
-        if structural_components.check_one_component_possibility_order(category=category, category_num=num):
-            structural_components.add_element(category, num)
+    categories[5] = "empty"
+    sentence_nums[5] = -1
+
+    struct_list = StructuralList.get_structural_list(categories, sentence_nums)
+    print(struct_list.check_structural_list())
+
+    # for num, category in enumerate(categories):
+    #     if structural_components.check_one_component_possibility_order(category=category, category_num=num):
+    #         structural_components.add_element(category, num)
 
     a = 90

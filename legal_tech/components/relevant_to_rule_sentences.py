@@ -38,6 +38,9 @@ class RelevantToRuleSentences(Rule):
             rated_sentences[hash(sentence.text)] = RatedSentence(sentence, sample_vivo)
         return RelevantToRuleSentences(rule.name, rule.vivo, rated_sentences)
 
+
+        
+    
     def get_max_relevant_sentence(self):
         return max(self.relevant_sentences.values(), key=attrgetter('relevance'))
 

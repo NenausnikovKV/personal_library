@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from legal_tech.excerts.vivo_sentence import VivoSentence
 
 
@@ -27,3 +29,13 @@ class RatedSentence(VivoSentence):
         """
         # todo тут находится ядро  сравнения выбирается как именно сравниваются компоненты с предложениями
         return rule_vivo.part_of(self.vivo)
+    
+    # @staticmethod
+    # def collect_all_rated_sentences(components):
+    #     component_sorted_sentences = defaultdict(list) 
+    #     for component_name, component in components.items():
+    #         for sen_hash, rel_sentence in component.relevant_sentences.items():
+    #             component_sorted_sentences[sen_hash].append(rel_sentence)
+    #             
+            
+        
