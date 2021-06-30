@@ -4,7 +4,7 @@ from legal_tech.components.rated_rule import RatedRule
 from legal_tech.excerts.vivo_sentence import VivoSentence
 
 
-class RelevantToSentenceRules(VivoSentence):
+class RelevantRules(VivoSentence):
     # предложение, виво и словрь подходящих правил с их релевантностью
     def __init__(self, vivo_sentence, relevant_to_rules_sentences):
 
@@ -47,3 +47,19 @@ class RelevantToSentenceRules(VivoSentence):
                 rated_rule = RatedRule(rule=component.rule, relevance=relevant_sentence.relevance)
                 relevant_to_sentences_rules[sentence_hash].append(rated_rule)
         return relevant_to_sentences_rules
+
+    @classmethod
+    def get_from_relevant_to_rules_sentences(cls, relevant_to_rules_sentences):
+        relevant_to_sentence_rules = {}
+        for relevant_to_rule_sentences in relevant_to_rules_sentences.values():
+            relevant_sentences = relevant_to_rule_sentences.relevant_sentences.values()
+            for relevant_sentence in relevant_sentences:
+                sentence_hash = hash(relevant_sentence.sentence.text)
+                if not relevant_to_sentence_rules.get(sentence_hash):
+                    relevant_to_sentence_rules[sentence_hash] = RelevantRules(relevant_sentence,
+                                                                              [relevant_to_rule_sentences])
+                else:
+                    rule = relevant_to_rule_sentences.rule
+                    relevance = relevant_to_rule_sentences.relevant_sentences[sentence_hash].relevance
+                    relevant_to_sentence_rules[sentence_hash].add_rated_rule(rule, relevance)
+        return relevant_to_sentence_rules

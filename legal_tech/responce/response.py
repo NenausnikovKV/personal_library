@@ -2,8 +2,8 @@ import json
 
 from file_processing.json_processing import MyJSONEncoder
 from legal_tech.components.final_component import FinalComponent
-from source.responce.found_component import FoundComponent
-from source.responce.unfound_component import UnfoundComponent
+from legal_tech.responce.found_component import FoundComponent
+from legal_tech.responce.unfound_component import UnfoundComponent
 
 description = dict()
 description["name"] = "Наименование документа"
@@ -28,12 +28,40 @@ class Response:
         self.description = description
 
     @classmethod
-    def get_json_responce(cls, text, final_components):
+    def get_json_responce_from_text(cls, text, final_components):
         """
         расчитываем и собираем json_responce
         """
 
-        found_components = FoundComponent.get_found_components(text, final_components)
+        found_components = FoundComponent.get_from_final_components(text, final_components)
+
+        unfound_components = UnfoundComponent.get_unfound_components(found_components)
+
+        responce = Response(text, found_components, unfound_components)
+
+        return responce
+
+    @classmethod
+    def get_from_result_components(cls, text, result_components):
+        """
+        расчитываем и собираем json_responce
+        """
+
+        found_components = FoundComponent.get_from_result_components(result_components)
+
+        unfound_components = UnfoundComponent.get_unfound_components(found_components)
+
+        responce = Response(text, found_components, unfound_components)
+
+        return responce
+
+    @classmethod
+    def get_json_responce_from_sentences(cls, sentences, final_components):
+        """
+        расчитываем и собираем json_responce
+        """
+
+        found_components = FoundComponent.get_from_final_components(sentences, final_components)
 
         unfound_components = UnfoundComponent.get_unfound_components(found_components)
 
@@ -56,6 +84,6 @@ if __name__ == '__main__':
     for name, excerts in components.items():
         final_components[name] =(FinalComponent(name, excerts))
 
-    responce = Response.get_json_responce(text, final_components)
+    responce = Response.get_json_responce_from_text(text, final_components)
     with open("out\\2\\test_responce", "w", encoding="utf-8") as file:
         json.dump(responce, file, ensure_ascii=False, cls=MyJSONEncoder)

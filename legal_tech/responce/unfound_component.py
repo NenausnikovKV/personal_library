@@ -1,6 +1,6 @@
 import json
 
-from file_processing.json_processing import read_json_directory
+from file_processing.json_processing import read_json_directory, MyJSONEncoder
 
 comments = dict()
 comments["name"] = "Согласие на обработку персональных данных"
@@ -18,17 +18,26 @@ comments["assign"] = "________________________(фамилия, имя, отче�
 
 def read_static_data():
     input_ = dict()
-    address = "in\\necessary_categories.json"
-    with open(address, "r", encoding="utf-8") as file:
-        necessary_categories = json.load(file)
-    input_["necessary_categories"] = necessary_categories
 
-    global_borders_address = "in\\global_borders"
-    names, borders = (read_json_directory(global_borders_address))
-    category_left_borders = dict()
-    for name, border in zip(names, borders):
-        category_left_borders[name] = border["left"]
+    input_["necessary_categories"] = ["name", "subject", "will", "purpose", "operator", "common_data", "data_action",
+                                      "processing_method", "time", "recall", "assign"]
+
+    category_left_borders = {"assign": ["operator", "start", "time", "processing_method", "will", "purpose",
+                                        "common_data", "data_action", "subject", "recall", "name"],
+                             "common_data": ["operator", "name", "will", "start"],
+                             "data_action": ["operator", "name", "will", "start"],
+                             "name": ["start"],
+                             "operator": ["name", "will", "start"],
+                             "processing_method": ["operator", "name", "will", "start"],
+                             "purpose": ["name", "subject", "will", "start"],
+                             "recall": ["operator", "start", "processing_method", "will", "name"],
+                             "subject": ["name", "start"],
+                             "time": ["operator", "start", "processing_method", "will", "purpose", "data_action",
+                                      "subject", "name"],
+                             "will": ["name", "start"]}
+
     input_["category_left_borders"] = category_left_borders
+
 
     return input_
 
@@ -36,20 +45,22 @@ def read_static_data():
 class UnfoundComponent:
 
     input_static_data = read_static_data()
-    category_left_borders = input_static_data["category_left_borders"]
-    necessary_categories = input_static_data["necessary_categories"]
 
     def __init__(self, component_name, index):
         self.component_name = component_name
         self.index = index
         self.text = comments[component_name]
 
+    def __repr__(self):
+        return f"{self.component_name} - {self.index}"
+
     @classmethod
     def get_unfound_components(cls, found_components):
 
         unfound_components = []
         found_categories = [found_component.component_name for found_component in found_components]
-        remaining_categories = [cat for cat in UnfoundComponent.necessary_categories if cat not in found_categories]
+        necessary_categories = UnfoundComponent.input_static_data["necessary_categories"]
+        remaining_categories = [cat for cat in necessary_categories if cat not in found_categories]
 
         for category in remaining_categories:
             start_index = UnfoundComponent._get_start_index(category, found_components)
@@ -77,7 +88,8 @@ class UnfoundComponent:
 
     @staticmethod
     def _get_left_found_components(category, found_components):
-        left_categories = UnfoundComponent.category_left_borders[category]
+        category_left_borders = UnfoundComponent.input_static_data["category_left_borders"]
+        left_categories = category_left_borders[category]
         left_found_components = []
         for found_component in found_components:
             if found_component.component_name in left_categories:

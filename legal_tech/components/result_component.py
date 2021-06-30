@@ -5,7 +5,7 @@ from operator import attrgetter
 from legal_tech.components.relevant_to_rule_sentences import RelevantToRuleSentences
 from legal_tech.components.rule import Rule
 from legal_tech.excerts.rated_sentence import RatedSentence
-from legal_tech.excerts.relevant_to_sentence_rules import RelevantToSentenceRules
+from legal_tech.excerts.relevant_to_sentence_rules import RelevantRules
 from legal_tech.excerts.vivo_sentence import VivoSentence
 
 from legal_tech.structural_sample.structural_list import StructuralList
@@ -67,23 +67,26 @@ class ResultComponent(Rule):
             if win_relevant_to_sentence_rule.sentence.text in free_sentence_texts:
                 free_sentence_texts.remove(win_relevant_to_sentence_rule.sentence.text)
 
+
+
             max_relevant_rule = win_relevant_to_sentence_rule.max_relevance_rule
 
             win_rated_sentence = RatedSentence(sentence=copy.deepcopy(win_relevant_to_sentence_rule).sentence,
                                                rule_vivo=max_relevant_rule.vivo,
                                                relevance=max_relevant_rule.relevance)
+
+
             if max_relevant_rule.name not in result_components.keys():
                 result_components[max_relevant_rule.name] = ResultComponent(max_relevant_rule.name,
-                                                                            max_relevant_rule,
+                                                                            copy.deepcopy(max_relevant_rule),
                                                                             [win_rated_sentence])
             else:
                 result_components[max_relevant_rule.name].add_rated_sentence(rated_sentence=win_rated_sentence,
-                                                                             current_rule_vivo=rule_vivo)
+                                                                             current_rule_vivo=max_relevant_rule.vivo)
 
             # вырезаем из виво предложения виво правила
             sentence_vivo = win_relevant_to_sentence_rule.vivo
-            rule_vivo = max_relevant_rule.vivo
-            win_relevant_to_sentence_rule.vivo = sentence_vivo.cut_other_vivo(rule_vivo)
+            win_relevant_to_sentence_rule.vivo = sentence_vivo.cut_other_vivo(max_relevant_rule.vivo)
 
             # перепись релевантности
             # перепись релевантностей отставшейся части виво рассматриваемого предложения ко всем правилам
@@ -448,7 +451,7 @@ class ResultComponent(Rule):
                     components[component_name] = probably_components[component_name]
                 vivo_sentence = all_sentences[sentence_hash]
                 if len(vivo_sentence.sentence.word_list) > 2:
-                    repeat_component_sentence[sentence_hash] = RelevantToSentenceRules(vivo_sentence, components.values())
+                    repeat_component_sentence[sentence_hash] = RelevantRules(vivo_sentence, components.values())
 
         return repeat_component_sentence
     # ------------------------------------------------------------------------------------------------------------------

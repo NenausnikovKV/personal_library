@@ -14,10 +14,10 @@ class Agreement(Text):
     
     @classmethod
     def get_agreement_from_text(cls, text):
-        text = preprocessing(text)
+        # text = Agreement.preprocessing(text)
         text_object = Text.get_text_object_from_text(text)
         agreement = cls(text_object)
-        agreement.replace_elements()
+        # agreement.replace_elements()
         return agreement
 
     @staticmethod
@@ -37,6 +37,15 @@ class Agreement(Text):
                 self.replace_word(element_text, replacement_word)
 
 
+    @staticmethod
+    def preprocessing(text):
+        """
+        Простейшее изменение, использую для заглушки, только те которые легко откатить, но которые необходимы для
+        деления текста
+        """
+        text = text.replace("\n", " ")
+        text = text.replace("..", ".")
+        return text
 
     def replace_elements(self):
         address = get_general_address("in/anthology/countries")
