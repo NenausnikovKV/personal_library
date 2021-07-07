@@ -36,6 +36,14 @@ class ResultComponent(Rule):
     def get_max_relevant_sentence(self):
         return max(self.relevant_sentences.values(), key=attrgetter('relevance'))
 
+    def reduce_sentences(self):
+        max_relevant_sentences = max(self.relevant_sentences.values(), key=attrgetter("relevance"))
+        max_relevance = max_relevant_sentences.relevance
+        threshold = max_relevance/3
+        for sentence_hash, rated_sentence in copy.copy(self.relevant_sentences).items():
+            if rated_sentence.relevance < threshold:
+                self.relevant_sentences.pop(sentence_hash)
+
 
     @classmethod
     def compute_result_components(cls, relevant_to_sentences_rules):  # tuple, tuple
