@@ -55,7 +55,7 @@ class UnfoundComponent:
         return f"{self.component_name} - {self.index}"
 
     @classmethod
-    def get_unfound_components(cls, found_components):
+    def get_unfound_components(cls, found_components, last_text_index):
 
         unfound_components = []
         found_categories = [found_component.component_name for found_component in found_components]
@@ -63,19 +63,24 @@ class UnfoundComponent:
         remaining_categories = [cat for cat in necessary_categories if cat not in found_categories]
 
         for category in remaining_categories:
-            start_index = UnfoundComponent._get_start_index(category, found_components)
+            start_index = UnfoundComponent._get_start_index(category, found_components, last_text_index)
             unfound_components.append(UnfoundComponent(component_name=category, index=start_index))
         return unfound_components
 
     @staticmethod
-    def _get_start_index(category, found_components):
+    def _get_start_index(category, found_components, last_text_index):
         if category == "name":
             start_index = 0
+            return start_index
+        if category == "assign":
+            start_index = last_text_index
             return start_index
         else:
             left_found_components = UnfoundComponent._get_left_found_components(category, found_components)
             start_index = UnfoundComponent._find_last_components_end(left_found_components)
             return start_index
+
+
 
 
     @staticmethod

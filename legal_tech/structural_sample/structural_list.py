@@ -12,15 +12,26 @@ from legal_tech.structural_sample.gears.order_categories import OrderedCategorie
 
 def read_config_borders():
     borders = {}
-    directory = "in\\global_borders"
-    files = os.listdir(directory)
-    for file_name in files:
-        file_address = "{0}\\{1}".format(directory, file_name)
-        category = file_name
-        with open(file_address, "r", encoding='utf-8') as file:
-            json_data = json.load(file)
-            category_global_border = Borders(left_categories=json_data["left"], right_categories=json_data["right"])
-            borders[category] = category_global_border
+    try:
+        directory = "/home/legaltech/legaltech.viwo.ru/webapps/ROOT/python/one_another_model/source/in/global_borders"
+        files = os.listdir(directory)
+        for file_name in files:
+            file_address = "{0}//{1}".format(directory, file_name)
+            category = file_name
+            with open(file_address, "r", encoding='utf-8') as file:
+                json_data = json.load(file)
+                category_global_border = Borders(left_categories=json_data["left"], right_categories=json_data["right"])
+                borders[category] = category_global_border
+    except:
+        directory = "D:/!pyProject/legal_tech/agreement_processing/one_another_model/source/in/global_borders"
+        files = os.listdir(directory)
+        for file_name in files:
+            file_address = "{0}//{1}".format(directory, file_name)
+            category = file_name
+            with open(file_address, "r", encoding='utf-8') as file:
+                json_data = json.load(file)
+                category_global_border = Borders(left_categories=json_data["left"], right_categories=json_data["right"])
+                borders[category] = category_global_border
     return borders
 
 

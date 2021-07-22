@@ -21,6 +21,13 @@ class ExcerptBoundaries:
             all_boundaries.append(sent_boundaries)
         return all_boundaries
 
+    @classmethod
+    def get_from_sentence(cls, sentence):
+        all_boundaries = []
+        sent_boundaries = ExcerptBoundaries(sentence.start, sentence.stop)
+        all_boundaries.append(sent_boundaries)
+        return all_boundaries
+
 
 if __name__ == '__main__':
 

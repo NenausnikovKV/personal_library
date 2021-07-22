@@ -56,18 +56,22 @@ class Response:
         return responce
 
     @classmethod
-    def get_json_responce_from_sentences(cls, sentences, final_components):
+    def get_json_responce_from_sentences(cls, category_and_sentence_tuples, text):
         """
         расчитываем и собираем json_responce
         """
 
-        found_components = FoundComponent.get_from_final_components(sentences, final_components)
+        found_components = FoundComponent.get_from_sentences(category_and_sentence_tuples)
 
-        unfound_components = UnfoundComponent.get_unfound_components(found_components)
+        unfound_components = UnfoundComponent.get_unfound_components(found_components, last_text_index=len(text))
 
         responce = Response(text, found_components, unfound_components)
 
         return responce
+
+    def write_json(self, address):
+        with open(address, "w", encoding="utf-8") as json_file:
+            json.dump(self, json_file, ensure_ascii=False, cls=MyJSONEncoder)
 
 
 if __name__ == '__main__':

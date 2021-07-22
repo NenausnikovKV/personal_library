@@ -35,6 +35,15 @@ class FoundComponent:
             found_components.append(FoundComponent(component_name=name, indices=component_boundaries))
         return found_components
 
+    @classmethod
+    def get_from_sentences(cls, category_and_sentence_tuples):
+        # запаковываем найденные компоненты
+        found_components = []
+        for category, sentence in category_and_sentence_tuples:
+            name = category
+            component_boundaries = ExcerptBoundaries.get_from_sentence(sentence)
+            found_components.append(FoundComponent(component_name=name, indices=component_boundaries))
+        return found_components
 
 if __name__ == '__main__':
     name = "assign"
