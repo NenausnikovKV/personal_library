@@ -45,16 +45,6 @@ class Text:
                     all_sentences_words[word_hash].involve_new_source(sentence.words[word_hash])
         return all_sentences_words
 
-    @classmethod
-    def get_text_object_from_text(cls, file_text, number=-1):
-        """
-        Дополнительный конструктор
-        """
-        sentence_list = cls._recognise_sentences(file_text)
-        words = cls._get_text_word_dict(sentence_list)
-        sentence_dict = {hash(sentence.text): sentence for sentence in sentence_list}
-
-        return cls(file_text, sentence_dict, words, number)
 
 
     @classmethod

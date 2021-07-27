@@ -4,36 +4,7 @@ import re
 from NLP.token_stage.personal_token import Token
 
 
-def clear_puctuations(sentence):
-    punctuation_list = Token.punctuation_list
-    normal_token_dict = dict([hash(token.text), token] for token in sentence.normal_tokens)
-    for mark in punctuation_list:
-        if normal_token_dict.get(hash(mark)):
-            sentence.remove_word(mark)
 
-
-
-def unit_upper_case_register_sequence_sentence(sentence_texts):
-    num = 1
-    while num < len(sentence_texts):
-        sentence_text1 = sentence_texts[num]
-        sentence_text2 = sentence_texts[num - 1]
-        if sentence_text1.isupper() and sentence_text2.isupper():
-            sentence_texts.pop(num)
-            sentence_texts[num-1] = sentence_text1 + sentence_text2
-        num+=1
-    return sentence_texts
-
-
-def get_agreements(file_text):
-    agrement_start_sample = r"\wогласие\b\s+\d+"
-    agreement_texts = re.split(agrement_start_sample, file_text)
-    i = 0
-    for text in agreement_texts:
-        if text == "":
-            agreement_texts.pop(i)
-        i += 1
-    return agreement_texts
 
 def simple_preprocessing(text):
     i = 2
@@ -45,6 +16,53 @@ def simple_preprocessing(text):
     text = text.replace("Ф.И.О.", "ФИО")
     text = text.replace("..", ".")
     return text
+
+def hard_preprocessing(text):
+    # убираем предложения написанные капсом - во все словах все кроме первой буквы переводятся в нижний регистр
+    # буква остается в верхнем регистре только в  случае если она первая слове и уже была в верхнем регистре
+    # text = correct_register(text)
+    # очищаем большие буквы внутри предложений
+    # все, кроме первой буквы и буквы после перепноса строки переводятся в нижний регистр
+    # буква остается в верхнем регистре только в  случае если она первая в предложении или строке и уже была в верхнем регистре
+
+    # удаляем переносы строк
+    # matches = re.findall(r'^[^\w+]', text)
+    # for match in matches:
+    #     text = text.replace(match, " ")
+
+    text = text.replace("Ф.И.О.", "фио")
+    text = text.replace("ФИО", "фио")
+    # text = correct_plan_text_list(text)
+    text = text.replace("\n", " ")
+    # text = _line_break_processing(text)
+    # text = re.sub(r"\d\.")
+    # sentence_texts = SyntaxAnalyzer.divide_text_to_sentence_plan_texts(text)
+    # sentence_texts = unit_upper_case_register_sequence_sentence(sentence_texts)
+    # sentence_texts = [_correct_sentence_register(sentence) for sentence in sentence_texts]
+    # text = " ".join(sentence_texts)
+    text = text.replace("..", ".")
+    return text
+
+def clear_puctuations(sentence):
+    """
+    Удаляем все знаки препинания
+    """
+    punctuation_list = Token.punctuation_list
+    normal_token_dict = dict([hash(token.text), token] for token in sentence.normal_tokens)
+    for mark in punctuation_list:
+        if normal_token_dict.get(hash(mark)):
+            sentence.remove_word(mark)
+
+def unit_upper_case_register_sequence_sentence(sentence_texts):
+    num = 1
+    while num < len(sentence_texts):
+        sentence_text1 = sentence_texts[num]
+        sentence_text2 = sentence_texts[num - 1]
+        if sentence_text1.isupper() and sentence_text2.isupper():
+            sentence_texts.pop(num)
+            sentence_texts[num-1] = sentence_text1 + sentence_text2
+        num+=1
+    return sentence_texts
 
 
 def correct_register(text):
@@ -106,36 +124,44 @@ def correct_plan_text_list(text):
         text = text.replace(element, new_element)
     return text
 
+def remove_punctuatin_mark(text):
+    punctuation_list = Token.punctuation_list
+    for mark in punctuation_list:
+        index = text.find(mark)
+        if index>=0:
+           text = text[0, index] + text[index+1, -1]
+    return text
 
-def preprocessing(text):
-    # убираем предложения написанные капсом - во все словах все кроме первой буквы переводятся в нижний регистр
-    # буква остается в верхнем регистре только в  случае если она первая слове и уже была в верхнем регистре
-    # text = correct_register(text)
-    # очищаем большие буквы внутри предложений
-    # все, кроме первой буквы и буквы после перепноса строки переводятся в нижний регистр
-    # буква остается в верхнем регистре только в  случае если она первая в предложении или строке и уже была в верхнем регистре
+def safe_remove_digital(text):
+    new_text = re.sub('\d', ' ', text)
+    return new_text
 
+def safe_preprocessing(text):
+    """
+    Предобработка без изменения длины текста
+    """
+    # удаляем цифры
+    text = safe_remove_digital(text)
     # удаляем переносы строк
-    # matches = re.findall(r'^[^\w+]', text)
-    # for match in matches:
-    #     text = text.replace(match, " ")
-
-    text = text.replace("Ф.И.О.", "фио")
-    text = text.replace("ФИО", "фио")
-    # text = correct_plan_text_list(text)
     text = text.replace("\n", " ")
-    # text = _line_break_processing(text)
-    # text = re.sub(r"\d\.")
-    # sentence_texts = SyntaxAnalyzer.divide_text_to_sentence_plan_texts(text)
-    # sentence_texts = unit_upper_case_register_sequence_sentence(sentence_texts)
-    # sentence_texts = [_correct_sentence_register(sentence) for sentence in sentence_texts]
-    # text = " ".join(sentence_texts)
-    text = text.replace("..", ".")
+    # выравниваем регистр
     return text
 
 if __name__ == "__main__":
     print(os.path.abspath("test1"))
     with open("test", "r", encoding="utf-8") as file:
         text = file.read()
-    text = preprocessing(text)
+    text = safe_preprocessing(text)
     print(text)
+
+
+
+def get_agreements(file_text):
+    agrement_start_sample = r"\wогласие\b\s+\d+"
+    agreement_texts = re.split(agrement_start_sample, file_text)
+    i = 0
+    for text in agreement_texts:
+        if text == "":
+            agreement_texts.pop(i)
+        i += 1
+    return agreement_texts

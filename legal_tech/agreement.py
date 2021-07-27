@@ -1,9 +1,9 @@
 import re
 from collections import namedtuple
 
-
+from NLP import processing_plain_text
 from NLP.text_stage.text import Text
-from NLP.processing_plain_text import preprocessing
+from NLP.processing_plain_text import safe_preprocessing
 from file_processing.file_processing import get_general_address, get_anthology_elements
 
 
@@ -45,6 +45,16 @@ class Agreement(Text):
         """
         text = text.replace("\n", " ")
         text = text.replace("..", ".")
+        return text
+
+    @staticmethod
+    def safe_preprocessing(text):
+        """
+        Предобработка без изменения длины текста
+        """
+        # удаляем переносы строк
+        text = text.replace("\n", " ")
+        # выравниваем регистр
         return text
 
     def replace_elements(self):
