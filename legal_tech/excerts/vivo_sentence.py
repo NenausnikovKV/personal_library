@@ -4,10 +4,9 @@ from graph_representation.vivo.vivo import Vivo
 
 class VivoSentence():
     """
-
     Предложение и его графическое представление
     Соответствует интерфейсу элемента кластера
-
+    дает возможность легко изменять метод получения виво предложения
     """
 
     def __init__(self, sentence=None, vivo=None):
