@@ -11,9 +11,14 @@ from graph_representation.vivo.vivo import Vivo
 # todo переписать в 2 класса Sentence and TextSentence
 class Sentence:
 
-    def __init__(self, sen_text, tokens, normal_tokens, word_list, sen_words, syn_vivo, num=-1, start=-1):
-        # 
-        self.text = sen_text
+    def __init__(self, sen_text, tokens, normal_tokens, word_list, sen_words, syn_vivo, num=-1, start=-1,
+                 preprocessing_text_method=None):
+        #
+        self.original_text = sen_text
+        try:
+            self.text = preprocessing_text_method(sen_text)
+        except TypeError:
+            self.text = sen_text
         self.num = num
         # 
         self.start = start

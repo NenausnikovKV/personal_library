@@ -2,7 +2,7 @@ import copy
 from collections import namedtuple, defaultdict
 from operator import attrgetter
 
-from legal_tech.components.relevant_to_rule_sentences import RelevantToRuleSentences
+from legal_tech.components.component import Component
 from legal_tech.components.rule import Rule
 from legal_tech.excerts.rated_sentence import RatedSentence
 from legal_tech.excerts.relevant_to_sentence_rules import RelevantRules

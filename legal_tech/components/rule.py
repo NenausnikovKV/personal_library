@@ -19,18 +19,18 @@ class Rule:
         return "{0} \n {1}".format(self.name, self.vivo)
 
     @classmethod
-    def read_components_from_directory(cls, directory):
+    def read_from_directory(cls, directory):
         """Получение элементов согласия"""
         directory = directory
         json_file_names = os.listdir(directory)
-        components = {}
+        rules = {}
         for json_file_name in json_file_names:
             json_file_full_address = directory + "/" + json_file_name
             # отбрасываем тип файла
             name = json_file_name.split(".")[0]
             component = cls.read_component_from_json(name, json_file_full_address)
-            components[component.name] = component
-        return components
+            rules[component.name] = component
+        return rules
 
     @classmethod
     def read_component_from_json(cls, json_file_name, json_file_address):

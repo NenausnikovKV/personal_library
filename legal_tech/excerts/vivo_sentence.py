@@ -14,12 +14,16 @@ class VivoSentence():
         self.sentence = sentence
         self.vivo = vivo
 
-
     @classmethod
-    def get_vivo_sentence_from_sentence(cls, sentence):
+    def get_fully_connected_vivo_sentence_from_sentence(cls, sentence):
         vivo = cls.get_fully_connected_vivo_from_sentence(sentence)
         return cls(sentence, vivo)
 
+    @classmethod
+    def get_syntactical_vivo_sentence_from_sentence(cls, sentence):
+        assert sentence.vivo == None, "Синтаксический виво предложения не обнаружен"
+        vivo = sentence.vivo
+        return cls(sentence, vivo)
 
     def __add__(self, other):
         result = copy.deepcopy(self)
