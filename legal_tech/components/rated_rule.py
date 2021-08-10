@@ -7,8 +7,7 @@ from legal_tech.components.rule import Rule
 class RatedRule(Rule):
 
     """
-        Наименование и графовое описание компонента согласия
-        Также необходимость, но до сизх пор не использовалось
+        правило и его релевантность
     """
 
     def __init__(self, rule, relevance):

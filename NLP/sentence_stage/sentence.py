@@ -78,6 +78,9 @@ class Sentence:
     def __str__(self):
         return self.text
 
+    def __repr__(self):
+        return self.text
+
     def __eq__(self, other):
         return self.text == other.text
 

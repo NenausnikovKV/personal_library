@@ -8,13 +8,13 @@ class RatedSentence(VivoSentence):
     def __init__(self, sentence, rule_vivo, relevance=None):
         VivoSentence.__init__(self, sentence=sentence, vivo=sentence.vivo)
         self.rule_vivo = rule_vivo
-        self.relevance = self.check_relevance(relevance)
+        self.relevance = self._check_relevance(relevance)
 
     def __str__(self):
         return "{0} - {1}".format(str(self.relevance), self.sentence.text)
 
 
-    def check_relevance(self, relevance):
+    def _check_relevance(self, relevance):
         if relevance is not None:
             pass
         else:
