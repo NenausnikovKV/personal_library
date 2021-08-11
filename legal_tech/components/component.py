@@ -14,11 +14,12 @@ class Component(Rule):
     def __init__(self, rule_name, rule_vivo, rule_sentence_relevances):
         self.name = rule_name
         self.rule = Rule(rule_name, rule_vivo)
-        self.relevant_sentences = rule_sentence_relevances
+        #  dict
+        self.rule_sentence_relevance = rule_sentence_relevances
 
 
     @staticmethod
-    def get_all_components(agreement, rules):
+    def get_all_components_from_agreements(agreement, rules):
         components = dict()
         for rule_name, rule in rules.items():
             components[rule_name] = Component.get_component(rule, agreement.vivo_sentences)
@@ -27,14 +28,11 @@ class Component(Rule):
     @staticmethod
     def get_component(rule, vivo_sentences):
         rule_copy = copy.deepcopy(rule)
-        relevant_sentence = {}
+        rule_sentence_relevance = {}
         for sent_key, vivo_sentence in vivo_sentences.items():
             vivo_sentence_copy = copy.deepcopy(vivo_sentence)
-            relevant_sentence[sent_key] = RuleSentenceRelevance(vivo_sentence_copy, rule_copy)
-        return Component(rule_copy.name, rule_copy.vivo, relevant_sentence)
-
+            rule_sentence_relevance[sent_key] = RuleSentenceRelevance(vivo_sentence_copy, rule_copy)
+        return Component(rule_copy.name, rule_copy.vivo, rule_sentence_relevance)
 
     def get_max_relevant_sentence(self):
-        return max(self.relevant_sentences.values(), key=attrgetter('relevance'))
-
-    
+        return max(self.rule_sentence_relevance.values(), key=attrgetter('relevance'))
