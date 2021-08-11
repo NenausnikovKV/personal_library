@@ -1,3 +1,4 @@
+import copy
 import re
 from collections import namedtuple
 
@@ -5,18 +6,25 @@ from NLP import processing_plain_text
 from NLP.text_stage.text import Text
 from NLP.processing_plain_text import safe_preprocessing
 from file_processing.file_processing import get_general_address, get_anthology_elements
+from legal_tech.excerts.vivo_sentence import VivoSentence
 
 
 class Agreement(Text):
 
     def __init__(self, text_object):
         super().__init__(text_object.text, text_object.sentences, text_object.words, number=0)
-    
+        # превращение предложений в виво предложения     
+        self.vivo_sentences = dict()
+        for sentence_key, sentence in self.sentences.items():
+            self.vivo_sentences[sentence_key] = VivoSentence.get_syntactical_vivo_sentence_from_sentence(sentence)
+        del self.sentences
+
+
     @classmethod
     def get_agreement_from_text(cls, text):
         # text = Agreement.preprocessing(text)
         text_object = Text.get_text_object_from_text(text)
-        agreement = cls(text_object)
+        agreement = Agreement(text_object)
         # agreement.replace_elements()
         return agreement
 
