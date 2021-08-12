@@ -38,7 +38,7 @@ class VivoSentence():
 
     @classmethod
     def get_syntactical_vivo_sentence_from_sentence(cls, sentence):
-        assert sentence.vivo == None, "Синтаксический виво предложения не обнаружен"
+        assert sentence.vivo != None, "Синтаксический виво предложения не обнаружен"
         vivo = sentence.vivo
         return cls(sentence, vivo)
 

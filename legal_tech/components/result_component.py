@@ -2,10 +2,9 @@ import copy
 from collections import namedtuple, defaultdict
 from operator import attrgetter
 
-from legal_tech.components.component import Component
 from legal_tech.components.rule import Rule
+from legal_tech.excerts.rule_sentence_relevance import RuleSentenceRelevance
 from legal_tech.excerts.rated_sentence import RatedSentence
-from legal_tech.excerts.relevant_to_sentence_rules import RelevantRules
 from legal_tech.excerts.vivo_sentence import VivoSentence
 
 from legal_tech.structural_sample.structural_list import StructuralList
@@ -13,101 +12,91 @@ from legal_tech.structural_sample.structural_list import StructuralList
 
 class ResultComponent(Rule):
 
-    def __init__(self, name, rule, rated_sentences, necessity=True):
+    def __init__(self, name, rule, rule_sentence_relevances, necessity=True):
 
         self.name = name
         self.rule = rule
-        self.relevant_sentences = {}
-        for rated_sentence in rated_sentences:
+        self.rule_sentence_relevances = {}
+        for rated_sentence in rule_sentence_relevances:
             self.add_rated_sentence(rated_sentence)
 
     def __str__(self):
-        return self.name + " - " + self.relevant_sentences.__len__()
+        return self.name + " - " + self.rule_sentence_relevances.__len__()
 
     def __repr__(self):
         return self.name
 
-    def check_sentence(self, sentence_text):
-        return hash(sentence_text) in self.relevant_sentences
-
-    def find_sentence(self, sentence_text):
-        return self.relevant_sentences[hash(sentence_text)]
-
     def get_max_relevant_sentence(self):
-        return max(self.relevant_sentences.values(), key=attrgetter('relevance'))
+        return max(self.rule_sentence_relevances.values(), key=attrgetter('relevance'))
 
     def reduce_sentences(self):
-        max_relevant_sentences = max(self.relevant_sentences.values(), key=attrgetter("relevance"))
+        max_relevant_sentences = max(self.rule_sentence_relevances.values(), key=attrgetter("relevance"))
         max_relevance = max_relevant_sentences.relevance
         threshold = max_relevance/3
-        for sentence_hash, rated_sentence in copy.copy(self.relevant_sentences).items():
+        for sentence_hash, rated_sentence in copy.copy(self.rule_sentence_relevances).items():
             if rated_sentence.relevance < threshold:
-                self.relevant_sentences.pop(sentence_hash)
+                self.rule_sentence_relevances.pop(sentence_hash)
 
 
     @classmethod
-    def compute_result_components(cls, relevant_to_sentences_rules):  # tuple, tuple
+    def compute_result_components(cls, rated_sentences):  # tuple, tuple
 
         """
             определяем компоненты по вхождению правила в предложение с выситанием правила из предложения
         """
 
-        #  работаем с копиями, т.к. изменяется vivos предложений и компонентов в процессе сравнения
-        relevant_to_sentences_rules = copy.deepcopy(relevant_to_sentences_rules)
-
-
-        # свободные предложения - по ним определяется конец цикла, когда они заканчиваются
-        copy_relevant_to_sentences_rules = copy.deepcopy(relevant_to_sentences_rules)
-        free_sentence_texts = set(sentence.sentence.text for sentence in copy_relevant_to_sentences_rules.values())
         result_components = {}
-        relevant_to_sentences_rules = sorted(relevant_to_sentences_rules.values(),
-                                             key=attrgetter('max_relevance'),
-                                             reverse=True)
+        copy_rated_sentences = copy.deepcopy(rated_sentences)
+
+
+
+        reated_sentences_list = sorted(copy_rated_sentences.values(), key=attrgetter('max_relevance'), reverse=True)
         # выделение результирующих компонент
         while True:
-            win_relevant_to_sentence_rule = relevant_to_sentences_rules[0]
+
+            # анализируемое rated_sentence
+            win_rated_sentence = reated_sentences_list[0]
+
+            # его глогбальное vivo_sentence (отличающееся в месте хранения от локальных в sentence_rule_relevances
+            win_vivo_sentence = win_rated_sentence.vivo_sentence
+
+            # его наиболее релевантное sentence_rule_relevance
+            win_rule_sentence_relevance = win_rated_sentence.max_relevant_rule
+            # лучшая релдевантность
+            win_relevance = win_rule_sentence_relevance.relevance
+            # наиболее релевантное к анализируемому rated_sentence правило
+            win_rule = win_rule_sentence_relevance.rule
+
 
             # точка выхода из цикла, потенциально перебор всех предложений
-            if win_relevant_to_sentence_rule.max_relevance < 0.02:
+            if win_rated_sentence.max_relevance < 0.02:
                     break
 
-            # уменьшаем количество свободных предложений
-            if win_relevant_to_sentence_rule.sentence.text in free_sentence_texts:
-                free_sentence_texts.remove(win_relevant_to_sentence_rule.sentence.text)
-
-
-
-            max_relevant_rule = win_relevant_to_sentence_rule.max_relevance_rule
-
-            win_rated_sentence = RatedSentence(sentence=copy.deepcopy(win_relevant_to_sentence_rule).sentence,
-                                               rule_vivo=max_relevant_rule.vivo,
-                                               relevance=max_relevant_rule.relevance)
-
-
-            if max_relevant_rule.name not in result_components.keys():
-                result_components[max_relevant_rule.name] = ResultComponent(max_relevant_rule.name,
-                                                                            copy.deepcopy(max_relevant_rule),
-                                                                            [win_rated_sentence])
+            # vivo_sentence изменябщаяся величина - в резалте же нам необходимо зафиксировать слепок на данный момент
+            # в данной модлели rule не изменяется динамически
+            result_rule_sentence_relevance = RuleSentenceRelevance(vivo_sentence=copy.deepcopy(win_vivo_sentence),
+                                                                rule=win_rule,
+                                                                relevance=win_relevance)
+            if win_rule.name not in result_components.keys():
+                result_component = ResultComponent(name=win_rule.name,
+                                                    rule=copy.deepcopy(win_rule),
+                                                    rule_sentence_relevances=[result_rule_sentence_relevance])
+                result_components[win_rule.name] = result_component
             else:
-                result_components[max_relevant_rule.name].add_rated_sentence(rated_sentence=win_rated_sentence,
-                                                                             current_rule_vivo=max_relevant_rule.vivo)
+                result_components[win_rule.name].add_rated_sentence(result_rule_sentence_relevance)
 
-            # вырезаем из виво предложения виво правила
-            sentence_vivo = win_relevant_to_sentence_rule.vivo
-            win_relevant_to_sentence_rule.vivo = sentence_vivo.cut_other_vivo(max_relevant_rule.vivo)
+            # вырезаем из предложения правило
+            win_vivo_sentence.vivo = win_vivo_sentence.vivo.cut_other_vivo(win_rule.vivo)
 
-            # перепись релевантности
-            # перепись релевантностей отставшейся части виво рассматриваемого предложения ко всем правилам
-            for rule_name, rule in win_relevant_to_sentence_rule.rated_rules.items():
-                new_relevance = rule.vivo.part_of(win_relevant_to_sentence_rule.vivo)
-                win_relevant_to_sentence_rule.rated_rules[rule_name].relevance = new_relevance
+            # пересчет релевантности
+            # пересчет релевантностей отставшейся части виво рассматриваемого предложения ко всем правилам
+            for rule_name, rule_sentence_relevance in win_rated_sentence.rule_sentence_relevances.items():
+                rule_vivo = rule_sentence_relevance.rule.vivo
+                new_relevance = rule_vivo.part_of(win_vivo_sentence.vivo)
+                win_rated_sentence.rule_sentence_relevances[rule_name].relevance = new_relevance
 
-            # перечсет максимальной релевантности ко всем компонентам для всех предложений
-            for relevant_to_sentence_rules in relevant_to_sentences_rules:
-                relevant_to_sentence_rules.max_relevance = 0
-                relevant_to_sentence_rules.define_max_relevance()
             # сортировка всех предложений на основе максимальной релевантности
-            relevant_to_sentences_rules = sorted(relevant_to_sentences_rules, key=attrgetter('max_relevance'), reverse=True)
+            reated_sentences_list = sorted(reated_sentences_list, key=attrgetter('max_relevance'), reverse=True)
 
         return result_components
 
@@ -364,36 +353,37 @@ class ResultComponent(Rule):
             max_relevance_sentence = rule_sentences.get_max_relevant_sentence()
 
             result_component = ResultComponent(name=rule_name,
-                                   rule=rule_sentences.rule,
-                                   rated_sentences=[max_relevance_sentence])
+                                               rule=rule_sentences.rule,
+                                               rule_sentence_relevances=[max_relevance_sentence])
 
             result_components[rule_name] = result_component
 
         return result_components
 
     def _get_max_relevant_excert(self):
-        max_relevance_excert =  max((excert for excert in self.relevant_sentences), key=attrgetter("relevance"))
+        max_relevance_excert =  max((excert for excert in self.rule_sentence_relevances), key=attrgetter("relevance"))
         return max_relevance_excert
 
     # ------------------------------------------------------------------------------------------------------------------
-    def add_rated_sentence(self, rated_sentence, current_rule_vivo=None):
-        self.relevant_sentences[hash(rated_sentence.sentence.text)] = rated_sentence
+    def add_rated_sentence(self, rule_sentence_relevance, current_rule_vivo=None):
+        sentence_key = hash(rule_sentence_relevance.vivo_sentence.sentence.text)
+        self.rule_sentence_relevances[sentence_key] = rule_sentence_relevance
 
     def delete_excert(self, sentence):
-        for excert in self.relevant_sentences.values():
+        for excert in self.rule_sentence_relevances.values():
             # if hasattr(sentence, "sentence"):
             #     sentence = sentence.sentence
             text_hash = hash(sentence.text)
-            if self.relevant_sentences.get(text_hash):
+            if self.rule_sentence_relevances.get(text_hash):
                 self.vivo = self.vivo - excert.component_vivo
-                self.relevant_sentences.pop(hash(sentence.text))
+                self.rule_sentence_relevances.pop(hash(sentence.text))
                 break
 
     def filter_inconsistent_sentences(self):
         # гипотеза, что нельзя разорвать блок,
         # несколько предложений, относящихся к одному блоку
         # должны находится в тексте последовательно
-        relevant_sentences = list(copy.copy(list(self.relevant_sentences.values())))
+        relevant_sentences = list(copy.copy(list(self.rule_sentence_relevances.values())))
         relevant_sentences = sorted(relevant_sentences, key=lambda relevant_sentence: relevant_sentence.sentence.num)
 
         #  определяем самое релевантное предложение
@@ -436,7 +426,7 @@ class ResultComponent(Rule):
         new_sentences.extend(right_side_sentence)
         new_sentences.extend(left_side_sentence)
         #  записываем полученные предложения в рассматриваемый компонент
-        self.relevant_sentences = {hash(sentence.sentence.text):sentence for sentence in new_sentences}
+        self.rule_sentence_relevances = {hash(sentence.sentence.text):sentence for sentence in new_sentences}
 
     @staticmethod
     def find_sentence_repeat(probably_components, all_sentences):
@@ -459,7 +449,7 @@ class ResultComponent(Rule):
                     components[component_name] = probably_components[component_name]
                 vivo_sentence = all_sentences[sentence_hash]
                 if len(vivo_sentence.sentence.word_list) > 2:
-                    repeat_component_sentence[sentence_hash] = RelevantRules(vivo_sentence, components.values())
+                    repeat_component_sentence[sentence_hash] = RatedSentence(vivo_sentence, components.values())
 
         return repeat_component_sentence
     # ------------------------------------------------------------------------------------------------------------------
@@ -497,7 +487,7 @@ class ResultComponent(Rule):
             sentence_vivo = new_sentence.vivo
             result_sentences = {hash(new_sentence.text): new_sentence}
             other_components[component_name] = ResultComponent(component_name, sentence_vivo, necessity=True,
-                                                               rated_sentences=result_sentences)
+                                                               rule_sentence_relevances=result_sentences)
         return other_components
 
 
