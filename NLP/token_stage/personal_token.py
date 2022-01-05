@@ -2,7 +2,7 @@ from file_processing import file_processing
 
 
 def get_punctuation_list():
-    address = file_processing.get_library_address("punctuation_mark")
+    address = file_processing.get_personal_library_address("data//punctuation_mark")
     # path = os.getcwd()[:os.getcwd().find("source")]  + "source\\NLP\\token_stage\\delimeted_punctuation_mark"
     f = open(address, "r", encoding="utf-8")
     punctuation_text = ""
