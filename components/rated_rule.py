@@ -1,6 +1,3 @@
-import json
-import os
-from graph_representation.vivo.vivo import Vivo
 from legal_tech.components.rule import Rule
 
 

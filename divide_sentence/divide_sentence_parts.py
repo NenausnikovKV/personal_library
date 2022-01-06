@@ -5,7 +5,7 @@ from operator import attrgetter
 from NLP.token_stage.word import SentenceWord
 from legal_tech.components.result_component import ResultComponent
 from NLP.sentence_stage.sentence import Sentence
-from graph_representation.vivo.vivo import Vivo
+from graph_representation import Vivo
 from legal_tech.excerts.relevant_excert import ExcerptRelevance
 from legal_tech.excerts.vivo_sentence import VivoSentence
 

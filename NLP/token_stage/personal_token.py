@@ -1,9 +1,15 @@
+import inspect
+
 from file_processing import file_processing
 
 
 def get_punctuation_list():
-    address = file_processing.get_personal_library_address("data//punctuation_mark")
-    # path = os.getcwd()[:os.getcwd().find("source")]  + "source\\NLP\\token_stage\\delimeted_punctuation_mark"
+    address = file_processing.get_general_address("clusterization_components_excerpts//in//punctuation_mark")
+    current_module = __import__(__name__)
+    module_address = inspect.getfile(current_module)
+    folder_address = module_address[:module_address.rindex("\\")]
+    local_address = "punctuation_mark"
+    address = f"{folder_address}//{local_address}"
     f = open(address, "r", encoding="utf-8")
     punctuation_text = ""
     for line in f:

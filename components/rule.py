@@ -1,6 +1,6 @@
 import json
 import os
-from graph_representation.vivo.vivo import Vivo
+from graph_representation import Vivo
 
 
 class Rule:

@@ -1,5 +1,5 @@
 import copy
-from graph_representation.vivo.vivo import Vivo
+from graph_representation import Vivo
 
 
 class VivoSentence():
