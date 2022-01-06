@@ -2,12 +2,12 @@ import copy
 from collections import namedtuple, defaultdict
 from operator import attrgetter
 
-from legal_tech.components.rule import Rule
-from legal_tech.excerts.rule_sentence_relevance import RuleSentenceRelevance
-from legal_tech.excerts.rated_sentence import RatedSentence
-from legal_tech.excerts.vivo_sentence import VivoSentence
+from components.rule import Rule
+from excerts.rule_sentence_relevance import RuleSentenceRelevance
+from excerts.rated_sentence import RatedSentence
+from excerts.vivo_sentence import VivoSentence
 
-from legal_tech.structural_sample.structural_list import StructuralList
+from structural_sample.structural_list import StructuralList
 
 
 class ResultComponent(Rule):

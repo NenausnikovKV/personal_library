@@ -1,5 +1,4 @@
-from legal_tech.components.get_relevance import get_rule_sentence_relevance
-from legal_tech.excerts.vivo_sentence import VivoSentence
+from components.get_relevance import get_rule_sentence_relevance
 
 
 class RuleSentenceRelevance():

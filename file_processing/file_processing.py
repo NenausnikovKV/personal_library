@@ -9,7 +9,7 @@ def get_general_address(local_address):
 
 def get_personal_library_address(local_address):
     cur_dir = os.getcwd()
-    path = os.getcwd()[:cur_dir.find("personal_library")] + "personal_library//" + local_address
+    path = os.getcwd()[:cur_dir.find("personal_library")] + "//personal_library//" + local_address
     return path
 
 

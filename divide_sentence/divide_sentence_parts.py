@@ -3,11 +3,12 @@ from collections import namedtuple
 from operator import attrgetter
 
 from NLP.token_stage.word import SentenceWord
-from legal_tech.components.result_component import ResultComponent
+from components.result_component import ResultComponent
 from NLP.sentence_stage.sentence import Sentence
-from graph_representation import Vivo
-from legal_tech.excerts.relevant_excert import ExcerptRelevance
-from legal_tech.excerts.vivo_sentence import VivoSentence
+from divide_sentence.relevant_excert import ExcerptRelevance
+
+from excerts.vivo_sentence import VivoSentence
+from graph_representation.vivo import Vivo
 
 
 class Suspect:

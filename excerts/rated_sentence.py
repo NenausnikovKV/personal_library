@@ -1,8 +1,5 @@
 import copy
-from collections import defaultdict
 from operator import attrgetter
-
-from legal_tech.excerts.vivo_sentence import VivoSentence
 
 
 class RatedSentence():

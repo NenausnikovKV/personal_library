@@ -1,4 +1,4 @@
-from legal_tech.components.rule import Rule
+from components.rule import Rule
 
 
 class RatedRule(Rule):

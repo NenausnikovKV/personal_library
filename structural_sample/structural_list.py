@@ -1,9 +1,8 @@
 import json
 import os
 
-from file_processing.file_processing import get_general_address
-from legal_tech.structural_sample.gears.borders import Borders
-from legal_tech.structural_sample.gears.order_categories import OrderedCategories
+from structural_sample.gears.borders import Borders
+from structural_sample.gears.order_categories import OrderedCategories
 
 """
 Не знаю что это, но было бы неплохо просмотреть и, при необходимости вписать в обзую структуру

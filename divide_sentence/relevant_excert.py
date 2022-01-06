@@ -1,4 +1,4 @@
-from legal_tech.excerts.vivo_sentence import VivoSentence
+from excerts.vivo_sentence import VivoSentence
 
 
 class ExcerptRelevance(VivoSentence):

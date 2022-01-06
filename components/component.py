@@ -1,8 +1,8 @@
 import copy
 from operator import attrgetter
 
-from legal_tech.components.rule import Rule
-from legal_tech.excerts.rule_sentence_relevance import RuleSentenceRelevance
+from components.rule import Rule
+from excerts.rule_sentence_relevance import RuleSentenceRelevance
 
 
 class Component(Rule):
